@@ -1,0 +1,27 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Информация о Рассылке{% endblock %}
+
+{% block content %}
+<div class="row rounded mt-3">
+    <h4 class=" container link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover ">Сообщение: {{ compaign.message }}</h4>
+    <div class="col-12 text-start">
+    </div>
+    <div class="col-12 text-start">
+        <p class="text-bg-light p-3">Получатели: {{ compaign.subscribers }</p>
+    </div>
+    <div class="text-end">
+        <div class=" col-3">
+            <a href="#" class="btn btn-secondary mt-3 text-end">Добавить получателя</a>
+        </div>
+    </div>
+</div>
+<div class="text-end">
+    <a href="{% url 'mailing:compaign_edit' compaign.pk %}" class="btn btn-secondary">Редактировать</a>
+        <a href="{% url 'mailing:compaign_delete' compaign.pk %}" class="btn btn-danger">Удалить</a>
+        <a href="{% url 'mailing:compaign_list' %}" class="btn btn-primary">Вернуться к списку</a>
+</div>
+<div class=" mt-5">
+        <span class="border border-white"></span>
+</div>
+{% endblock %}

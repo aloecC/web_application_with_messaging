@@ -1,0 +1,13 @@
+{% extends 'mailing/base.html' %}
+{% block title %} Удаление получателя {% endblock %}
+{% block content %}
+   <div class="container mt-5">
+        <h3 class="mb-3">Удаление получателя</h3>
+        <p>Вы действительно хотите удалить {{ subscriber.email }}?</p>
+       <form method="post" action="{% url 'mailing:subscriber_delete' subscriber.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger"> Подтвердить </button>
+            <a href="{% url 'mailing:subscriber_delete' subscriber.pk %}" class="btn btn-primary"> Отменить </a>
+        </form>
+    </div>
+{% endblock %}

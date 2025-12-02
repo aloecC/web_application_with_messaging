@@ -1,9 +1,27 @@
-# SECURITY WARNING: don't run with debug turned on in production!
+import os
+from dotenv import load_dotenv
 from pathlib import Path
 
-DEBUG = True  #Режим отладки
+
+load_dotenv(override=True)
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent #Настройка котороая содержит путь до текущего приложения
+#Нужен для построения абсолютных путей
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+# Специальный секретный путь используемый для криптографических подписей
+# Нельзя загружать в удаленный репозиторий
+SECRET_KEY = os.getenv('SECRET_KEY')
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True if os.getenv('DEBUG') else False #Режим отладки
 
 ALLOWED_HOSTS = []#Список доменных имен которые могут обслуживаться нашим приложением
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent #Настройка котороая содержит путь до текущего приложения
 #Нужен для построения абсолютных путей
@@ -56,8 +74,14 @@ WSGI_APPLICATION = "config.wsgi.application" #Путь к WSGI приложен�
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 #Настройка для подключения к базе данных
 DATABASES = {
-
-
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": os.getenv('NAME'),
+        "USER": os.getenv('USER'),
+        "PASSWORD": os.getenv('PASSWORD'),
+        'HOST': os.getenv('HOST'),
+        'PORT': os.getenv('PORT')
+    }
 }
 
 

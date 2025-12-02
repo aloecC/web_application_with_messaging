@@ -1,10 +1,30 @@
 from django.urls import path
 from . import views
+from .views import MessageDeleteView, MessageUpdateView, MessageCreateView, MessageDetailView, MessageListView, \
+    SubscriberListView, SubscriberDeleteView, SubscriberUpdateView, SubscriberCreateView, SubscriberDetailView, \
+    CampaignCreateView, CampaignDetailView, CampaignUpdateView, CampaignDeleteView, CampaignListView
 
 #Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
 app_name = 'mailing'
 
 #В urlpatterns создаются и регестрируются маршруты
 #Path это специальная функция которая позволяет регестрировать наш маршрут
+
+
 urlpatterns = [
+    path('message/home/', MessageListView.as_view(), name='message_list'),
+    path('message/<int:pk>/', MessageDetailView.as_view(), name='message_detail'),
+    path('message/new/', MessageCreateView.as_view(), name='message_create'),
+    path('message/<int:pk>/edit/', MessageUpdateView.as_view(), name='message_edit'),
+    path('message/<int:pk>/delete/', MessageDeleteView.as_view(), name='message_delete'),
+    path('subscriber/home/', SubscriberListView.as_view(), name='subscriber_list'),
+    path('subscriber/<int:pk>/', SubscriberDetailView.as_view(), name='subscriber_detail'),
+    path('subscriber/new/', SubscriberCreateView.as_view(), name='subscriber_create'),
+    path('subscriber/<int:pk>/edit/', SubscriberUpdateView.as_view(), name='subscriber_edit'),
+    path('subscriber/<int:pk>/delete/', SubscriberDeleteView.as_view(), name='subscriber_delete'),
+    path('subscriber/<int:pk>/', CampaignDetailView.as_view(), name='campaign_detail'),
+    path('campaign/new/', CampaignCreateView.as_view(), name='campaign_create'),
+    path('campaign/home/', CampaignListView.as_view(), name='campaign_list'),
+    path('campaign/<int:pk>/edit/', CampaignUpdateView.as_view(), name='campaign_edit'),
+    path('campaign/<int:pk>/delete/', CampaignDeleteView.as_view(), name='campaign_delete'),
 ]

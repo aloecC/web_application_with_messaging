@@ -1,0 +1,24 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Информация о получателе{% endblock %}
+
+{% block content %}
+<div class="row rounded mt-3">
+    <h4>{{ subscriber.email }}</h4>
+    <div class="col-12 ">
+        <p>{{ subscriber.full_name }}</p>
+        <p>{{ subscriber.comment }}</p>
+    </div>
+    <div class="col-12 text-center">
+        <p></p>
+    </div>
+</div>
+<div class="text-end">
+    <a href="{% url 'mailing:subscriber_edit' subscriber.pk %}" class="btn btn-secondary">Редактировать</a>
+        <a href="{% url 'mailing:subscriber_delete' subscriber.pk %}" class="btn btn-danger">Удалить</a>
+        <a href="{% url 'mailing:subscriber_list' %}" class="btn btn-primary">Вернуться к списку</a>
+</div>
+<div class=" mt-5">
+        <span class="border border-white"></span>
+</div>
+{% endblock %}

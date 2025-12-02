@@ -1,0 +1,27 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Главная{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4 text-center">Список Сообщений</h1>
+        <a href="{% url 'mailing:message_create' %}" class="rounded text-center w-100 btn btn-outline-success border border-secondary-subtle">Создать новое сообщение</a>
+        </div>
+    </div>
+    {% if messages %}
+        <div class="row mt-5">
+            {% for message in messages %}
+                <div class="col-2 mt-3">
+                    <h4 class="mt-4">{{ message.subject }}</h4>
+                        <p>{{ messages.body|truncatechars:100 }}</p>
+                        <p>{{ messages.subscribers|truncatechars:100 }}</p>
+                    <button class="rounded text-center w-100 btn btn-outline-light border border-secondary-subtle"><a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'mailing:message_detail' message.pk %}">Перейти</a></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Нет доступных сообщений.</p>
+    {% endif %}
+
+{% endblock %}
