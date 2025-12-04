@@ -9,42 +9,39 @@
         <a href="{% url 'mailing:campaign_create' %}" class="rounded text-center w-100 btn btn-outline-success border border-secondary-subtle">Создать новую рассылку</a>
         </div>
     </div>
-    {% if сampaignes %}
+    {% if campaignes %}
         <div class="row mt-5 text-center">
-            {% for сampaign in сampaignes %}
-                <div class="col-3">
-                    <p>Все рассылки</p>
-                </div>
-                <div class="col-6 mt-3  text-center">
-                    <h4 class="mt-4 text-center"></h4>
-                        <p>{{ сampaign.message}}</p>
-                        <p>{{ сampaign.subscribers }}</p>
-                        <p>{{ сampaign.status }}</p>
-                    <button class="rounded text-center w-100 btn btn-outline-light border border-secondary-subtle"><a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'mailing:сampaign_detail' сampaign.pk %}">Перейти</a></button>
-                </div>
-                <div class="col-3">
+            <div class="col-12 mt-5">
+                 <p>Все рассылки</p>
+            </div>
+            {% for campaign in campaignes %}
+                <div class="col-12">
+                    <h4 class="mt-4 text-start"></h4>
+                    <p class="text-start"><button class="rounded text-start w-50 btn btn-outline-light border border-secondary-subtle"><a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'mailing:campaign_detail' campaign.pk %}"><h6 class=" mt-2 text-success-emphasis">Тема письма:</h6>{{ campaign.message}} <h6 class=" mt-2 text-success-emphasis"> Получатель:</h6> {{ campaign.subscribers }} <h6 class=" mt-2 text-success-emphasis">{{ campaign.status }}</h6> </a></button> </p>
+                        </div>
+                <div class="col-2">
                 </div>
             {% endfor %}
-            {% for сampaign in сampaignes %}
-                {% if сampaign.status == 'Запущена' %}
-                    <div class="col-3">
-                        <p>Активные рассылки</p>
-                    </div>
-                    <div class="col-6 mt-3  text-center">
-                        <h4 class="mt-4 text-center"></h4>
-                            <p>{{ сampaign.message}}</p>
-                            <p>{{ сampaign.subscribers }}</p>
-                            <p>{{ сampaign.status }}</p>
-                        <button class="rounded text-center w-100 btn btn-outline-light border border-secondary-subtle"><a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'mailing:сampaign_detail' сampaign.pk %}">Перейти</a></button>
-                    </div>
-                    <div class="col-3">
-                    </div>
-                {% endif %}
+            <h5 class="mb-4 text-center mt-5">Список Активных Рассылок</h5>
+            {% for campaign in campaignes %}
+
+            {% if campaign.status == 'Запущена' %}
+                        <h4 class="mt-4"></h4>
+                            <p>{{ campaign.message}}</p>
+                            <p>{{ campaign.subscribers }}</p>
+                            <p>{{ campaign.status }}</p>
+                        <button class="rounded text-center w-100 btn btn-outline-light border border-secondary-subtle"><a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'mailing:campaign_detail' сampaign.pk %}">Перейти</a></button>
+            {% else %}
+                <p>Нет активных рассылок.</p>
+            {% endif %}
+                </div>
+                <div class="col-2">
+                </div>
             {% endfor %}
-        </div>
     {% else %}
         <p>Нет доступных рассылок.</p>
     {% endif %}
+
     <div class="row">
         <div class="col-12">
             <h1 class="mb-4 text-center">Список Получателей</h1>

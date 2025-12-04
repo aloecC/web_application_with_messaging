@@ -58,7 +58,7 @@ class SubscriberListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['campaigns'] = Campaign.objects.all()  # Получаем все кампании
+        context['campaignes'] = Campaign.objects.all()  # Получаем все кампании
         return context
 
     def get_queryset(self):
@@ -96,6 +96,14 @@ class CampaignListView(ListView):
     template_name = 'mailing/subscriber_home.html'
     context_object_name = 'campaignes'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['subscribers'] = Subscriber.objects.all()
+        return context
+
+    def get_queryset(self):
+        return Campaign.objects.all()
+
 
 class CampaignDetailView(DetailView):
     model = Campaign
@@ -108,6 +116,11 @@ class CampaignCreateView(CreateView):
     template_name = 'mailing/campaign_form.html'
     fields = ['message', 'subscribers']
     success_url = reverse_lazy('mailing:campaign_list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        print(f"Создана новая рассылка: {form.instance}")  # Отладочный вывод
+        return response
 
 
 class CampaignUpdateView(UpdateView):

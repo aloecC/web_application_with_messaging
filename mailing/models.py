@@ -37,7 +37,7 @@ class Campaign(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name='Сообщение')
     subscribers = models.ManyToManyField(Subscriber, related_name='campaigns', verbose_name='Получатели')
     first_sent_at = models.DateTimeField(null=True, blank=True, verbose_name='Дата и время первой отправки')
-    end_time = models.DateTimeField(verbose_name='Дата и время окончания отправки', null=False)
+    end_time = models.DateTimeField(verbose_name='Дата и время окончания отправки', null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Создана', verbose_name='Статус')
 
     def __str__(self):
