@@ -1,0 +1,15 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Получатели{% endblock %}
+
+{% block content %}
+
+<h4>Список получателей:</h4>
+                </div>
+    {% for subscriber in subscribers %}
+                <div class="col-6 mt-3  text-center">
+                    <button class="rounded text-center w-100 btn btn-outline-light border border-secondary-subtle"><a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'mailing:subscriber_detail' subscriber.pk %}">{{ subscriber.email }}</a></button>
+                </div>
+    {% endfor %}
+</div>
+{% endblock %}

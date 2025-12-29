@@ -7,7 +7,7 @@
        <form method="post" action="{% url 'mailing:message_delete' message.pk %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger"> Подтвердить </button>
-            <a href="{% url 'mailing:message_delete' %}" class="btn btn-primary"> Отменить </a>
+            <a href="{% url 'mailing:message_detail' message.pk %}" class="btn btn-primary"> Отменить </a>
         </form>
     </div>
 {% endblock %}

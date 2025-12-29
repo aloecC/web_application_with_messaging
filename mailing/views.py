@@ -9,7 +9,7 @@ from mailing.models import Message, Subscriber, Campaign
 
 class MessageListView(ListView):
     model = Message
-    template_name = 'mailing/home.html'
+    template_name = 'mailing/messages_list.html'
     context_object_name = 'messages'
 
 
@@ -53,16 +53,15 @@ class MessageDeleteView(DeleteView):
 
 class SubscriberListView(ListView):
     model = Subscriber
-    template_name = 'mailing/subscriber_home.html'
+    template_name = 'mailing/subscriber_list.html'
     context_object_name = 'subscribers'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['campaignes'] = Campaign.objects.all()  # Получаем все кампании
-        return context
+        context['subscribers'] = Campaign.objects.all()
 
     def get_queryset(self):
-        return Subscriber.objects.all()  # Получаем всех подписчиков
+        return Subscriber.objects.all()  # Получаем всех получателей
 
 
 class SubscriberDetailView(DetailView):
@@ -93,12 +92,13 @@ class SubscriberDeleteView(DeleteView):
 
 class CampaignListView(ListView):
     model = Campaign
-    template_name = 'mailing/subscriber_home.html'
+    template_name = 'mailing/home.html'
     context_object_name = 'campaignes'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['subscribers'] = Subscriber.objects.all()
+        context['campaignes'] = Campaign.objects.all()  # Получаем все рассылки
         return context
 
     def get_queryset(self):

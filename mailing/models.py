@@ -82,7 +82,7 @@ class Campaign(models.Model):
 class EmailAttempt(models.Model):
     '''Модель «Попытка отправки письма»'''
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, verbose_name='Рассылка')
-    subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE, verbose_name='Получатель')
+    subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE, related_name='emails')
     sent_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время попытки')
     status = models.CharField(max_length=20, verbose_name='Статус')
     response = models.TextField(verbose_name='Ответ почтового сервера')
