@@ -56,10 +56,6 @@ class SubscriberListView(ListView):
     template_name = 'mailing/subscriber_list.html'
     context_object_name = 'subscribers'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['subscribers'] = Campaign.objects.all()
-
     def get_queryset(self):
         return Subscriber.objects.all()  # Получаем всех получателей
 
@@ -98,7 +94,7 @@ class CampaignListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['subscribers'] = Subscriber.objects.all()
-        context['campaignes'] = Campaign.objects.all()  # Получаем все рассылки
+        context['campaignes'] = Campaign.objects.all()
         return context
 
     def get_queryset(self):
@@ -109,6 +105,16 @@ class CampaignDetailView(DetailView):
     model = Campaign
     template_name = 'mailing/campaign_detail.html'
     context_object_name = 'campaign'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_campaign = self.get_object()
+        context['subscribers'] = current_campaign.subscribers.all()
+        context['campaignes'] = Campaign.objects.all()
+        return context
+
+    def get_queryset(self):
+        return Campaign.objects.all()
 
 
 class CampaignCreateView(CreateView):

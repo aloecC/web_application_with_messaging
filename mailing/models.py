@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
@@ -34,14 +35,38 @@ class Campaign(models.Model):
         ('Завершена', 'Завершена'),
     ]
 
-    message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name='Сообщение')
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name='Сообщение', related_name='campaignes')
     subscribers = models.ManyToManyField(Subscriber, related_name='campaigns', verbose_name='Получатели')
-    first_sent_at = models.DateTimeField(null=True, blank=True, verbose_name='Дата и время первой отправки')
-    end_time = models.DateTimeField(verbose_name='Дата и время окончания отправки', null=True)
+    start_time = models.DateTimeField( verbose_name='Дата и время начала отправки', blank=False, null=False)
+    first_sent_at = models.DateTimeField( verbose_name='Дата и время первой отправки', blank=True, null=True)
+    end_time = models.DateTimeField(verbose_name='Дата и время окончания отправки', blank=False, null=False)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Создана', verbose_name='Статус')
 
+    def clean(self):
+        if self.start_time >= self.end_time:
+            raise ValidationError('Время начала должно быть меньше времени окончания.')
+        if self.start_time <= timezone.now():
+            raise ValidationError('Время начала не может быть в прошлом.')
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def update_status(self):
+        now = timezone.now()
+        if now < self.start_time:
+            new_status = 'Создана'
+        elif self.start_time <= now <= self.end_time:
+            new_status = 'Запущена'
+        else:
+            new_status = 'Завершена'
+
+        if self.status != new_status:
+            self.status = new_status
+            self.save(update_fields=['status'])
+
     def __str__(self):
-        return f"Рассылка: {self.message.subject} ({self.status})"
+        return f'Рассылка с {self.start_time} до {self.end_time} - Статус: {self.status}'
 
     def is_completed(self):
         return self.status == 'Завершена'
@@ -84,7 +109,7 @@ class EmailAttempt(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, verbose_name='Рассылка')
     subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE, related_name='emails')
     sent_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время попытки')
-    status = models.CharField(max_length=20, verbose_name='Статус')
+    status = models.CharField(max_length=20, verbose_name='Статус',)
     response = models.TextField(verbose_name='Ответ почтового сервера')
 
     def __str__(self):
