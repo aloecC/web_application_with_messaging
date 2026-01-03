@@ -71,9 +71,26 @@
                                             </h6>
                                         </div>
                                         <div class="col-2">
-                                            <h6 class="text-center mt-2">
-                                                <a href="#" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">Профиль</a>
-                                            </h6>
+                                            {% if user.is_authenticated %}
+                                            <div class="col-2 mt-2">
+                                                <h6 class="text-center mt-2 dropdown-item text-white">
+                                                    <h6><a class="link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:user_detail' user.username %}">Профиль</a></h6>
+                                                </h6>
+                                            </div>
+                                            <div class="col-2 mt-2">
+                                                <form method="post" action="{% url 'users:logout' %}">
+                                                    {% csrf_token %}
+                                                    <button class=" btn btn-light "><h6>Выйти</h6></button>
+                                                </form>
+                                            {% else %}
+                                            <div class="col-2 mt-3">
+                                                <h6><a class="link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:login' %}">Вход</a></h6>
+                                            </div>
+                                            <div class="col-2 mt-3">
+                                                <h6><a class="link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:register' %}">Регистрация</a></h6>
+                                            </div>
+
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>

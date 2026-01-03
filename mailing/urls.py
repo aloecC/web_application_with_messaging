@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 from .views import MessageDeleteView, MessageUpdateView, MessageCreateView, MessageDetailView, MessageListView, \
     SubscriberListView, SubscriberDeleteView, SubscriberUpdateView, SubscriberCreateView, SubscriberDetailView, \
-    CampaignCreateView, CampaignDetailView, CampaignUpdateView, CampaignDeleteView, CampaignListView
+    CampaignCreateView, CampaignDetailView, CampaignUpdateView, CampaignDeleteView, CampaignListView, StartEmailAttempt
 
 #Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
 app_name = 'mailing'
@@ -25,6 +25,7 @@ urlpatterns = [
     path('campaign/<int:pk>/', CampaignDetailView.as_view(), name='campaign_detail'),
     path('campaign/new/', CampaignCreateView.as_view(), name='campaign_create'),
     path('home/', CampaignListView.as_view(), name='campaign_list'),
+    path('campaign/start/<int:pk>/', StartEmailAttempt.as_view(), name='start_email'),
     path('campaign/<int:pk>/edit/', CampaignUpdateView.as_view(), name='campaign_edit'),
     path('campaign/<int:pk>/delete/', CampaignDeleteView.as_view(), name='campaign_delete'),
 ]

@@ -1,10 +1,14 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from datetime import timezone
+
+from django.core.mail import send_mail
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse, JsonResponse
+from django.views import View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic import ListView, DetailView, TemplateView
 from django.urls import reverse_lazy, reverse
 
-from mailing.models import Message, Subscriber, Campaign
+from mailing.models import Message, Subscriber, Campaign, EmailAttempt
 
 
 class MessageListView(ListView):
@@ -140,4 +144,45 @@ class CampaignDeleteView(DeleteView):
     model = Campaign
     template_name = 'mailing/campaign_confirm_delete.html'
     success_url = reverse_lazy('mailing:campaign_list')
+
+
+class StartEmailAttempt(View):
+    template_name = 'mailing/campaign_detail.html'
+
+    def post(self, request, campaign_id):
+        campaign = get_object_or_404(Campaign, id=campaign_id)
+
+        subscribers = campaign.subscribers.all()
+        message = campaign.message.all()
+        email_attempt = EmailAttempt(campaign=campaign)
+        email_attempt.save()
+
+        campaign.status = 'Запущена'
+        campaign.start_time = timezone.now()
+        campaign.save()
+
+        for subscriber in subscribers:
+            try:
+                response = send_mail(
+                    subject=f'{message.subject}',
+                    message=f'{message.body}',
+                    from_email='Subject here',
+                    recipient_list=[subscriber.email],
+                )
+                # Если отправка успешна
+                email_attempt.status = 'successful'
+
+                email_attempt.server_response = f"Sent to {subscriber.full_name} with response {response}"
+            except Exception as e:
+                # Если произошла ошибка
+                email_attempt.status = 'failed'
+                email_attempt.server_response = str(e)
+
+            # Сохраняем информацию о попытке
+            email_attempt.save()
+
+        campaign.status = 'Завершена'
+        campaign.end_time = timezone.now()
+        campaign.save()
+        return JsonResponse({'status': 'Emails sent', 'campaign': campaign.name})
 

@@ -8,12 +8,23 @@
     <div class="col-12 text-start">
     </div>
     <div class="col-12 text-start">
-        <p class="text-bg-light p-3">Получатели: {{ subscribers }}</p>
+        <p class="text-bg-light p-3">Получатели:
+            {% for subscriber in subscribers %}
+             <a class="link-dark link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="{% url 'mailing:subscriber_detail' subscriber.pk %}"> {{ subscriber.full_name }} </a> |
+            {% endfor %}</p>
+        <h6 class=" mt-2 text-success-emphasis">Статус: {{ campaign.status }}</h6>
     </div>
     <div class="text-start">
+        {% if campaign.status == 'Создана' %}
         <div class=" col-3">
             <a href="#" class="btn btn-secondary mt-3 text-end">Запуститить рассылку</a>
         </div>
+        {% endif %}
+        {% if campaign.status == 'Запущена' %}
+        <div class=" col-3">
+            <a href="#" class="btn btn-secondary mt-3 text-end">Отменить рассылку</a>
+        </div>
+        {% endif %}
     </div>
 </div>
 <div class="text-end">
