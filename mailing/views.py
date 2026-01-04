@@ -1,13 +1,15 @@
 from datetime import timezone
-
+import tkinter as tk
 from django.core.mail import send_mail
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views import View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic import ListView, DetailView, TemplateView
 from django.urls import reverse_lazy, reverse
+from pip._internal.models.link import Link
 
+from mailing.forms import CampaignForm
 from mailing.models import Message, Subscriber, Campaign, EmailAttempt
 
 
@@ -15,6 +17,18 @@ class MessageListView(ListView):
     model = Message
     template_name = 'mailing/messages_list.html'
     context_object_name = 'messages'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['count'] = self.get_count()
+        return context
+
+    def get_count(self):
+        messages = Message.objects.all()
+        count = 0
+        for message in messages:
+            count += 1
+        return count
 
 
 class MessageDetailView(DetailView):
@@ -60,6 +74,18 @@ class SubscriberListView(ListView):
     template_name = 'mailing/subscriber_list.html'
     context_object_name = 'subscribers'
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['count'] = self.get_count()
+        return context
+
+    def get_count(self):
+        subscribers = Subscriber.objects.all()
+        count = 0
+        for subscriber in subscribers:
+            count += 1
+        return count
+
     def get_queryset(self):
         return Subscriber.objects.all()  # Получаем всех получателей
 
@@ -92,14 +118,45 @@ class SubscriberDeleteView(DeleteView):
 
 class CampaignListView(ListView):
     model = Campaign
+    template_name = 'mailing/campaign_list.html'
+    context_object_name = 'campaignes'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['campaignes'] = Campaign.objects.all()
+        context['count'] = self.get_count()
+        return context
+
+    def get_count(self):
+        campaignes = Campaign.objects.all()
+        count = 0
+        for campaign in campaignes:
+            count += 1
+        return count
+
+    def get_queryset(self):
+        return Campaign.objects.filter()
+
+
+class CampaignView(View):
+    model = Campaign
     template_name = 'mailing/home.html'
     context_object_name = 'campaignes'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['subscribers'] = Subscriber.objects.all()
         context['campaignes'] = Campaign.objects.all()
+        current_campaign = self.get_object()
+        context['subscribers'] = current_campaign.subscribers.all()
+        context['count'] = self.get_count()
         return context
+
+    def get_count(self):
+        campaignes = Campaign.objects.all()
+        count = 0
+        for campaign in campaignes:
+            count += 1
+        return count
 
     def get_queryset(self):
         return Campaign.objects.all()
@@ -123,8 +180,8 @@ class CampaignDetailView(DetailView):
 
 class CampaignCreateView(CreateView):
     model = Campaign
+    form_class = CampaignForm
     template_name = 'mailing/campaign_form.html'
-    fields = ['message', 'subscribers']
     success_url = reverse_lazy('mailing:campaign_list')
 
     def form_valid(self, form):
@@ -135,7 +192,7 @@ class CampaignCreateView(CreateView):
 
 class CampaignUpdateView(UpdateView):
     model = Campaign
-    fields = ['message', 'subscribers']
+    form_class = CampaignForm
     template_name = 'mailing/campaign_form.html'
     success_url = reverse_lazy('mailing:campaign_list')
 
@@ -146,26 +203,21 @@ class CampaignDeleteView(DeleteView):
     success_url = reverse_lazy('mailing:campaign_list')
 
 
-class StartEmailAttempt(View):
-    template_name = 'mailing/campaign_detail.html'
+class StartEmailAttemptView(View):
 
-    def post(self, request, campaign_id):
-        campaign = get_object_or_404(Campaign, id=campaign_id)
-
+    def post(self, pk):
+        campaign = get_object_or_404(Campaign, pk=pk)
         subscribers = campaign.subscribers.all()
-        message = campaign.message.all()
         email_attempt = EmailAttempt(campaign=campaign)
         email_attempt.save()
-
-        campaign.status = 'Запущена'
-        campaign.start_time = timezone.now()
+        campaign.STATUS_CHOICES = 'Запущена'
         campaign.save()
 
         for subscriber in subscribers:
             try:
                 response = send_mail(
-                    subject=f'{message.subject}',
-                    message=f'{message.body}',
+                    subject=f'{ campaign.message.subject}',
+                    message=f'{ campaign.message.body}',
                     from_email='Subject here',
                     recipient_list=[subscriber.email],
                 )
@@ -178,11 +230,17 @@ class StartEmailAttempt(View):
                 email_attempt.status = 'failed'
                 email_attempt.server_response = str(e)
 
-            # Сохраняем информацию о попытке
-            email_attempt.save()
+                # Сохраняем информацию о попытке
+                email_attempt.save()
 
-        campaign.status = 'Завершена'
-        campaign.end_time = timezone.now()
-        campaign.save()
-        return JsonResponse({'status': 'Emails sent', 'campaign': campaign.name})
+            campaign.STATUS_CHOICES = 'Завершена'
+            campaign.save()
+            return redirect('mailing:campaign_detail', pk=pk)
+
+
+
+
+
+
+
 

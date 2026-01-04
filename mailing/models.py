@@ -1,3 +1,5 @@
+from datetime import datetime, time
+
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import models
@@ -35,16 +37,30 @@ class Campaign(models.Model):
         ('Завершена', 'Завершена'),
     ]
 
+    def get_default_start_time(self):
+        return timezone.make_aware(datetime.combine(timezone.now().date(), time(12, 0)))
+
+    def get_default_end_time(self):
+        return timezone.make_aware(datetime.combine(timezone.now().date(), time(22, 0)))
+
     message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name='Сообщение', related_name='campaignes')
     subscribers = models.ManyToManyField(Subscriber, related_name='campaigns', verbose_name='Получатели')
-    start_time = models.DateTimeField( verbose_name='Дата и время начала отправки', blank=True, null=True)
+    start_time = models.DateTimeField( verbose_name='Дата и время начала отправки', blank=False, null=False)
     first_sent_at = models.DateTimeField( verbose_name='Дата и время первой отправки', blank=True, null=True)
-    end_time = models.DateTimeField(verbose_name='Дата и время окончания отправки', blank=True, null=True)
+    end_time = models.DateTimeField(verbose_name='Дата и время окончания отправки', blank=False, null=False)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Создана', verbose_name='Статус')
 
     def clean(self):
+
+        if not self.start_time and not isinstance(self.start_time, datetime):
+            raise ValidationError("Неправильный формат даты. Используйте формат YYYY-MM-DD HH:MM.")
+
+        if not self.end_time and not isinstance(self.end_time, datetime):
+            raise ValidationError("Неправильный формат даты. Используйте формат YYYY-MM-DD HH:MM.")
+
         if self.start_time >= self.end_time:
             raise ValidationError('Время начала должно быть меньше времени окончания.')
+
         if self.start_time <= timezone.now():
             raise ValidationError('Время начала не может быть в прошлом.')
 
@@ -88,3 +104,10 @@ class EmailAttempt(models.Model):
 
     def __str__(self):
         return f"Попытка отправки для {self.subscriber.email} - {self.status}"
+
+    def clean(self):
+        now = timezone.now()
+        campaign = Campaign
+        if self.campaign.start_time <= now <= self.campaign.end_time:
+            print('Отправка разрешена.')
+        raise ValidationError('Отправка запрещена.')

@@ -17,7 +17,7 @@
     <div class="text-start">
         {% if campaign.status == 'Создана' %}
         <div class=" col-3">
-            <a href="#" class="btn btn-secondary mt-3 text-end">Запуститить рассылку</a>
+            <a href="{% url 'mailing:start_email' campaign.pk %}" class="btn btn-secondary mt-3 text-end">Запуститить рассылку</a>
         </div>
         {% endif %}
         {% if campaign.status == 'Запущена' %}
