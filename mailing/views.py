@@ -144,23 +144,22 @@ class CampaignView(View):
     template_name = 'mailing/home.html'
     context_object_name = 'campaignes'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['campaignes'] = Campaign.objects.all()
-        current_campaign = self.get_object()
-        context['subscribers'] = current_campaign.subscribers.all()
-        context['count'] = self.get_count()
-        return context
+    def get(self, request):
+        campaigns = Campaign.objects.all()
+        active_campaigns = campaigns.filter(status='Запущена').count()
+        unique_recipients = set()
 
-    def get_count(self):
-        campaignes = Campaign.objects.all()
-        count = 0
-        for campaign in campaignes:
-            count += 1
-        return count
+        for campaign in campaigns:
+            unique_recipients.update(campaign.subscribers.values_list('email', flat=True))
 
-    def get_queryset(self):
-        return Campaign.objects.all()
+        context = {
+            'campaignes': campaigns,
+            'total_campaigns': campaigns.count(),
+            'active_campaigns': active_campaigns,
+            'unique_recipients_count': len(unique_recipients),
+        }
+
+        return render(request, self.template_name, context)
 
 
 class CampaignDetailView(DetailView):
