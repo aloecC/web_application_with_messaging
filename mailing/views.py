@@ -135,8 +135,8 @@ class CampaignListView(ListView):
             count += 1
         return count
 
-    def get_queryset(self):
-        return Campaign.objects.filter()
+    #def get_queryset(self):
+     #   return Campaign.objects.filter()
 
 
 class CampaignView(View):
@@ -176,6 +176,7 @@ class CampaignDetailView(DetailView):
 
     def get_queryset(self):
         return Campaign.objects.all()
+
 
 
 class CampaignCreateView(CreateView):
@@ -223,20 +224,22 @@ class StartEmailAttemptView(View):
                 )
                 # Если отправка успешна
                 email_attempt.status = 'successful'
+                email_attempt.subscriber = subscriber
 
-                email_attempt.server_response = f"Sent to {subscriber.full_name} with response {response}"
+                email_attempt.response = f"Sent to {subscriber.full_name} with response {response}"
             except Exception as e:
                 # Если произошла ошибка
                 email_attempt.status = 'failed'
-                email_attempt.server_response = str(e)
+                email_attempt.response = str(e)
 
                 # Сохраняем информацию о попытке
+            email_attempt.subscriber = subscriber
             email_attempt.save()
 
-            campaign.status = 'Завершена'
-            campaign.save()
+        campaign.status = 'Завершена'
+        campaign.save()
 
-            return redirect('mailing:campaign_detail', pk=pk)
+        return redirect('mailing:campaign_detail', pk=pk)
 
 
 class StopEmailAttemptView(View):
@@ -248,5 +251,20 @@ class StopEmailAttemptView(View):
         return redirect('mailing:campaign_detail', pk=pk)
 
 
+class EmailAttemptListView(ListView):
+    model = EmailAttempt
+    template_name = 'mailing/emailattempt_list.html'
+    context_object_name = 'emailattempts'
 
+
+class EmailAttemptDeleteView(DeleteView):
+    model = EmailAttempt
+    template_name = 'mailing/emailattempt_confirm_delete.html'
+    success_url = reverse_lazy('mailing:emailattempt_list')
+
+
+class EmailAttemptDetailView(DetailView):
+    model = EmailAttempt
+    template_name = 'mailing/emailattempt_detail.html'
+    context_object_name = 'emailattempt'
 

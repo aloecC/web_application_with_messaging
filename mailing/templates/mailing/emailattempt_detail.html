@@ -1,0 +1,19 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Информация о Рассылке{% endblock %}
+
+{% block content %}
+<div class="row rounded mt-3 card">
+    <h4 class=" container link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover ">Отчет о рассылке </h4>
+    <div class="col-12 text-start">
+        <h6 class=" mt-2 text-success-emphasis">Тема письма: {{ emailattempt.campaign.message.subject }}</h6>
+        <h6 class=" mt-2 text-success-emphasis">Получатель: {{ emailattempt.subscriber }}</h6>
+        <h6 class=" mt-2 text-success-emphasis">Статус: {{ emailattempt.status }}</h6>
+        <h6 class=" mt-2 text-success-emphasis">Ответ почтового сервера: {{ emailattempt.response }}</h6>
+        <h6 class=" mt-2 text-success-emphasis">Дата отправки: {{ emailattempt.sent_at }}</h6>
+    </div>
+<div class="text-end">
+        <a href="{% url 'mailing:emailattempt_delete' emailattempt.pk %}" class="btn btn-danger">Удалить</a>
+        <a href="{% url 'mailing:emailattempt_list' %}" class="btn btn-primary">Вернуться к списку</a>
+</div>
+{% endblock %}

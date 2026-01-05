@@ -11,7 +11,7 @@
     {% if campaignes %}
         <div class="row  text-center">
             <div class="col-12 mt-1">
-                 <h4 class="mb-4 text-center mt-5">Список всех рассылок | {{ count }}</h4>
+                 <h4 class="mb-4 text-center mt-5">Отчеты по рассылкам | {{ count }}</h4>
             </div>
             {% for campaign in campaignes %}
                 <div class="col-12">
@@ -21,7 +21,7 @@
                             <a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'mailing:campaign_detail' campaign.pk %}">
                                 <h6 class=" mt-2 text-success-emphasis">Тема письма:</h6>{{ campaign.message }} <h6 class=" mt-2 text-success-emphasis"></h6>
                                 <h6 class=" mt-2 text-success-emphasis">{{ campaign.status }}</h6>
-                                <h6 class=" mt-2 text-success-emphasis">{{ campaign.start_time }}||{{ campaign.end_time }}</h6></a></button> </p>
+                                <h6 class=" mt-2 text-success-emphasis">{{ campaign.start_time|date:"d/m/Y" }} - {{ campaign.end_time|date:"d/m/Y" }}</h6></a></button> </p>
                         </div>
                 <div class="col-2">
                 </div>

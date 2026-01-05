@@ -1,0 +1,13 @@
+{% extends 'mailing/base.html' %}
+{% block title %} Удаление отчета {% endblock %}
+{% block content %}
+   <div class="container mt-5">
+        <h3 class="mb-3">Удаление отчета</h3>
+        <p>Вы действительно хотите удалить {{}}?</p>
+       <form method="post" action="{% url 'mailing:emailattempt_delete' emailattempt.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger"> Подтвердить </button>
+            <a href="{% url 'mailing:emailattempt_list' %}" class="btn btn-primary"> Отменить </a>
+        </form>
+    </div>
+{% endblock %}
