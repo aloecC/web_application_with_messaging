@@ -3,7 +3,7 @@ from . import views
 from .views import MessageDeleteView, MessageUpdateView, MessageCreateView, MessageDetailView, MessageListView, \
     SubscriberListView, SubscriberDeleteView, SubscriberUpdateView, SubscriberCreateView, SubscriberDetailView, \
     CampaignCreateView, CampaignDetailView, CampaignUpdateView, CampaignDeleteView, CampaignListView, \
-    CampaignView, StartEmailAttemptView
+    CampaignView, StartEmailAttemptView, StopEmailAttemptView
 
 #Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
 app_name = 'mailing'
@@ -15,6 +15,7 @@ app_name = 'mailing'
 urlpatterns = [
     path('messages/', MessageListView.as_view(), name='message_list'),
     path('campaign/start/<int:pk>/', StartEmailAttemptView.as_view(), name='start_email'),
+    path('campaign/stop/<int:pk>/', StopEmailAttemptView.as_view(), name='stop_email'),
     path('message/<int:pk>/', MessageDetailView.as_view(), name='message_detail'),
     path('message/new/', MessageCreateView.as_view(), name='message_create'),
     path('message/<int:pk>/edit/', MessageUpdateView.as_view(), name='message_edit'),

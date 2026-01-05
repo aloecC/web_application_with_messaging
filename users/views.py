@@ -8,7 +8,7 @@ from django.views import View
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, FormView
 from django.core.mail import send_mail
-from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm
+from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm, VerificationCodeForm
 from .models import CustomUser
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
@@ -30,19 +30,19 @@ class RegisterView(FormView):
 
 
 class VerifyView(FormView):
-    template_name = 'registration/verify.html'
-    form_class = CustomUserCreationForm
+    template_name = 'users/verify.html'
+    form_class = VerificationCodeForm
 
     def post(self, request, *args, **kwargs):
         code_entered = request.POST.get('verification_code')
         if code_entered == request.session.get('verification_code'):
-            # Код подтвержден, теперь сохраняем пользователя
+
             form = self.get_form()
             if form.is_valid():
                 form.save()
                 #self.send_welcome_email(user.email)
                 messages.success(request, 'Регистрация завершена успешно!')
-                return redirect('mailing:campaign_list')  # Перенаправляем на страницу успеха
+                return redirect('mailing:campaign_list')
         else:
             messages.error(request, "Неверный код подтверждения.")
 

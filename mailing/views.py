@@ -9,6 +9,7 @@ from django.views.generic import ListView, DetailView, TemplateView
 from django.urls import reverse_lazy, reverse
 from pip._internal.models.link import Link
 
+from config.settings import EMAIL_HOST_USER
 from mailing.forms import CampaignForm
 from mailing.models import Message, Subscriber, Campaign, EmailAttempt
 
@@ -143,23 +144,22 @@ class CampaignView(View):
     template_name = 'mailing/home.html'
     context_object_name = 'campaignes'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['campaignes'] = Campaign.objects.all()
-        current_campaign = self.get_object()
-        context['subscribers'] = current_campaign.subscribers.all()
-        context['count'] = self.get_count()
-        return context
+    def get(self, request):
+        campaigns = Campaign.objects.all()
+        active_campaigns = campaigns.filter(status='Запущена').count()
+        unique_recipients = set()
 
-    def get_count(self):
-        campaignes = Campaign.objects.all()
-        count = 0
-        for campaign in campaignes:
-            count += 1
-        return count
+        for campaign in campaigns:
+            unique_recipients.update(campaign.subscribers.values_list('email', flat=True))
 
-    def get_queryset(self):
-        return Campaign.objects.all()
+        context = {
+            'campaignes': campaigns,
+            'total_campaigns': campaigns.count(),
+            'active_campaigns': active_campaigns,
+            'unique_recipients_count': len(unique_recipients),
+        }
+
+        return render(request, self.template_name, context)
 
 
 class CampaignDetailView(DetailView):
@@ -205,20 +205,20 @@ class CampaignDeleteView(DeleteView):
 
 class StartEmailAttemptView(View):
 
-    def post(self, pk):
+    def post(self, request, pk):
         campaign = get_object_or_404(Campaign, pk=pk)
         subscribers = campaign.subscribers.all()
-        email_attempt = EmailAttempt(campaign=campaign)
-        email_attempt.save()
-        campaign.STATUS_CHOICES = 'Запущена'
+
+        campaign.status = 'Запущена'
         campaign.save()
 
         for subscriber in subscribers:
+            email_attempt = EmailAttempt(campaign=campaign, subscriber=subscriber)
             try:
                 response = send_mail(
-                    subject=f'{ campaign.message.subject}',
-                    message=f'{ campaign.message.body}',
-                    from_email='Subject here',
+                    subject=f'{ campaign.message.subject }',
+                    message=f'{ campaign.message.body }',
+                    from_email=f'{ EMAIL_HOST_USER }',
                     recipient_list=[subscriber.email],
                 )
                 # Если отправка успешна
@@ -231,15 +231,21 @@ class StartEmailAttemptView(View):
                 email_attempt.server_response = str(e)
 
                 # Сохраняем информацию о попытке
-                email_attempt.save()
+            email_attempt.save()
 
-            campaign.STATUS_CHOICES = 'Завершена'
+            campaign.status = 'Завершена'
             campaign.save()
+
             return redirect('mailing:campaign_detail', pk=pk)
 
 
+class StopEmailAttemptView(View):
+    def post(self, request, pk):
+        campaign = get_object_or_404(Campaign, pk=pk)
+        campaign.status = 'Завершена'
+        campaign.save()
 
-
+        return redirect('mailing:campaign_detail', pk=pk)
 
 
 

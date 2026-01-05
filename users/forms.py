@@ -8,28 +8,30 @@ from config import settings
 from .models import CustomUser
 
 
-#class VerificationCodeForm(forms.Form):
-#    verification_code = forms.CharField(label='Код подтверждения', max_length=6)
+class VerificationCodeForm(forms.Form):
+    verification_code = forms.CharField(label='Код подтверждения', max_length=6)
 
-#    class Meta:
- #       fields = ('verification_code')
+    class Meta:
+        fields = ('verification_code')
 
-  #  def __init__(self, *args, **kwargs):
-  #      super(VerificationCodeForm, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(VerificationCodeForm, self).__init__(*args, **kwargs)
 
-   #     self.fields['email'].widget.attrs.update(
-   #         {
-    #            'class': 'form-control',
-    #            'type': 'email',
-    #            'placeholder': 'Введите код подтверждения'
-    #        }
-    #    )
+        self.fields['email'].widget.attrs.update(
+            {
+                'class': 'form-control',
+                'type': 'email',
+                'placeholder': 'Введите код подтверждения'
+            }
+        )
 
-   # def clean_verification_code(self):
-  #      code = self.cleaned_data.get('verification_code')
-  #      if not code.isdigit() or len(code) != 6:
-  #          raise forms.ValidationError("Код должен состоять из 6 цифр.")
-  #      return code
+    def clean_verification_code(self):
+        code = self.verification_code
+        if not code.isdigit() or len(code) != 6:
+            raise forms.ValidationError("Код должен состоять из 6 цифр.")
+        if code != CustomUserCreationForm.verification_code:
+            raise forms.ValidationError("Неверный код подтверждения.")
+        return code
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -40,7 +42,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'username', 'first_name', 'phone_number', 'password1', 'password2', 'verification_code')
+        fields = ('email', 'username', 'first_name', 'phone_number', 'password1', 'password2')
 
     def __init__(self, *args, **kwargs):
         super(CustomUserCreationForm, self).__init__(*args, **kwargs)
@@ -109,12 +111,6 @@ class CustomUserCreationForm(UserCreationForm):
             [user_email],
             fail_silently=False,
         )
-
-    def clean_verification_code(self):
-        code = self.cleaned_data.get('verification_code')
-        if code != self.verification_code:
-            raise forms.ValidationError("Неверный код подтверждения.")
-        return code
 
     def save(self, commit=True):
         user = super().save(commit=False)
