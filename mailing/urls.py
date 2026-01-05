@@ -13,16 +13,16 @@ app_name = 'mailing'
 
 
 urlpatterns = [
-    path('messages/', MessageListView.as_view(), name='message_list'), #ok
-    path('message/<int:pk>/', MessageDetailView.as_view(), name='message_detail'),#Ok
-    path('message/new/', MessageCreateView.as_view(), name='message_create'),#Ok
-    path('message/<int:pk>/edit/', MessageUpdateView.as_view(), name='message_edit'), #ok
-    path('message/<int:pk>/delete/', MessageDeleteView.as_view(), name='message_delete'),#ok
-    path('subscribers/', SubscriberListView.as_view(), name='subscriber_list'), #ok
-    path('subscriber/<int:pk>/', SubscriberDetailView.as_view(), name='subscriber_detail'),#ok
-    path('subscriber/new/', SubscriberCreateView.as_view(), name='subscriber_create'),#ok
-    path('subscriber/<int:pk>/edit/', SubscriberUpdateView.as_view(), name='subscriber_edit'),#ok
-    path('subscriber/<int:pk>/delete/', SubscriberDeleteView.as_view(), name='subscriber_delete'),#ok
+    path('messages/', MessageListView.as_view(), name='message_list'),
+    path('message/<int:pk>/', MessageDetailView.as_view(), name='message_detail'),
+    path('message/new/', MessageCreateView.as_view(), name='message_create'),
+    path('message/<int:pk>/edit/', MessageUpdateView.as_view(), name='message_edit'),
+    path('message/<int:pk>/delete/', MessageDeleteView.as_view(), name='message_delete'),
+    path('subscribers/', SubscriberListView.as_view(), name='subscriber_list'),
+    path('subscriber/<int:pk>/', SubscriberDetailView.as_view(), name='subscriber_detail'),
+    path('subscriber/new/', SubscriberCreateView.as_view(), name='subscriber_create'),
+    path('subscriber/<int:pk>/edit/', SubscriberUpdateView.as_view(), name='subscriber_edit'),
+    path('subscriber/<int:pk>/delete/', SubscriberDeleteView.as_view(), name='subscriber_delete'),
     path('campaign/<int:pk>/', CampaignDetailView.as_view(), name='campaign_detail'),
     path('campaign/new/', CampaignCreateView.as_view(), name='campaign_create'),
     path('campaigns/', CampaignListView.as_view(), name='campaign_list'),
