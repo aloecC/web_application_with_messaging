@@ -9,6 +9,7 @@ from django.views.generic import ListView, DetailView, TemplateView
 from django.urls import reverse_lazy, reverse
 from pip._internal.models.link import Link
 
+from config.settings import EMAIL_HOST_USER
 from mailing.forms import CampaignForm
 from mailing.models import Message, Subscriber, Campaign, EmailAttempt
 
@@ -205,20 +206,20 @@ class CampaignDeleteView(DeleteView):
 
 class StartEmailAttemptView(View):
 
-    def post(self, pk):
+    def post(self, request, pk):
         campaign = get_object_or_404(Campaign, pk=pk)
         subscribers = campaign.subscribers.all()
-        email_attempt = EmailAttempt(campaign=campaign)
-        email_attempt.save()
-        campaign.STATUS_CHOICES = 'Запущена'
+
+        campaign.status = 'Запущена'
         campaign.save()
 
         for subscriber in subscribers:
+            email_attempt = EmailAttempt(campaign=campaign, subscriber=subscriber)
             try:
                 response = send_mail(
-                    subject=f'{ campaign.message.subject}',
-                    message=f'{ campaign.message.body}',
-                    from_email='Subject here',
+                    subject=f'{ campaign.message.subject }',
+                    message=f'{ campaign.message.body }',
+                    from_email=f'{ EMAIL_HOST_USER }',
                     recipient_list=[subscriber.email],
                 )
                 # Если отправка успешна
@@ -233,10 +234,13 @@ class StartEmailAttemptView(View):
                 # Сохраняем информацию о попытке
                 email_attempt.save()
 
-            campaign.STATUS_CHOICES = 'Завершена'
+            campaign.status = 'Завершена'
             campaign.save()
             return redirect('mailing:campaign_detail', pk=pk)
 
+
+class StopEmailAttemptView(View):
+    pass
 
 
 
