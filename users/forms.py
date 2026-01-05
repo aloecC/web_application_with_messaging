@@ -26,10 +26,10 @@ class VerificationCodeForm(forms.Form):
         )
 
     def clean_verification_code(self):
-        code = self.cleaned_data.get('verification_code')
+        code = self.verification_code
         if not code.isdigit() or len(code) != 6:
             raise forms.ValidationError("Код должен состоять из 6 цифр.")
-        if code != self.verification_code:
+        if code != CustomUserCreationForm.verification_code:
             raise forms.ValidationError("Неверный код подтверждения.")
         return code
 
