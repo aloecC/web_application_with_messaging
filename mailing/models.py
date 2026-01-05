@@ -61,8 +61,6 @@ class Campaign(models.Model):
         if self.start_time >= self.end_time:
             raise ValidationError('Время начала должно быть меньше времени окончания.')
 
-        if self.start_time <= timezone.now():
-            raise ValidationError('Время начала не может быть в прошлом.')
 
     def save(self, *args, **kwargs):
         self.clean()
