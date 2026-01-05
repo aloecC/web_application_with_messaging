@@ -40,6 +40,7 @@ class Campaign(models.Model):
     def get_default_start_time(self):
         return timezone.make_aware(datetime.combine(timezone.now().date(), time(12, 0)))
 
+
     def get_default_end_time(self):
         return timezone.make_aware(datetime.combine(timezone.now().date(), time(22, 0)))
 

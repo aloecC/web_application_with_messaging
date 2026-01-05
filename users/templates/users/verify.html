@@ -1,0 +1,18 @@
+{% extends 'mailing/base.html' %}
+{% block title %} Регистрация{% endblock %}
+{% block content %}
+% if messages %}
+    {% for message in messages %}
+        <p style="color: red;">{{ message }}</p>
+    {% endfor %}
+{% endif %}
+   <form method="post">
+    {% csrf_token %}
+    <label for="verification_code">Введите код подтверждения:</label>
+    <input type="text" name="verification_code" required>
+    <button type="submit">Подтвердить</button>
+</form>
+{% if error_message %}
+    <p style="color: red;">{{ error_message }}</p>
+{% endif %}
+{% endblock %}
