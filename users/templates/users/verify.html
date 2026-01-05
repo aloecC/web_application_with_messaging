@@ -1,7 +1,7 @@
 {% extends 'mailing/base.html' %}
 {% block title %} Подтверждение почты {% endblock %}
 {% block content %}
-% if messages %}
+{% if messages %}
     {% for message in messages %}
         <p style="color: red;">{{ message }}</p>
     {% endfor %}

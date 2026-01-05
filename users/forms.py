@@ -17,10 +17,9 @@ class VerificationCodeForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(VerificationCodeForm, self).__init__(*args, **kwargs)
 
-        self.fields['email'].widget.attrs.update(
+        self.fields['verification_code'].widget.attrs.update(
             {
                 'class': 'form-control',
-                'type': 'email',
                 'placeholder': 'Введите код подтверждения'
             }
         )
