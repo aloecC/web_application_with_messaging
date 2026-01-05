@@ -1,0 +1,17 @@
+{% extends 'mailing/base.html' %}
+{% block title %} login{% endblock %}
+{% block content %}
+
+    <div class="row mt-5">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <h3 class="mb-3 text-center">Вход на сайт</h3>
+            <form method="post" class="text-start">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Войти</button>
+            </form>
+        </div>
+        <div class="col-4"></div>
+    </div>
+{% endblock %}

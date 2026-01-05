@@ -1,0 +1,13 @@
+{% extends 'mailing/base.html' %}
+{% block title %} Форма для получателя {% endblock %}
+{% block content %}
+    <div class="container mt-5">
+        <h3 class="mb-3">Форма для получателя</h3>
+        <form method="post" enctype="multipart/form-data" action="{% if subscriber %}{% url 'mailing:subscriber_edit' subscriber.pk %}{% else %}{% url 'mailing:subscriber_create' %}{% endif %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a href="{% url 'mailing:subscriber_list' %}" class="btn btn-primary">Отменить</a>
+        </form>
+    </div>
+{% endblock %}

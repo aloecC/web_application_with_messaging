@@ -1,0 +1,26 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Личный профиль{% endblock %}
+
+{% block content %}
+    <div class="card text-center mt-4" style="width: 80rem;">
+        {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" class="card-img-top">
+        {% else %}
+            <li class="list-group-item">Добавьте фото пользователя</li>
+        {% endif %}
+        <div class="card-body">
+    <h5 class="card-title">{{ user.username }}</h5>
+
+  </div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">Имя пользователя: {{ user.username }}</li>
+    <li class="list-group-item">Номер телефона: {{ user.phone_number }}</li>
+    <li class="list-group-item">Почта: {{ user.email }}</li>
+  </ul>
+  <div class="card-body text-end">
+      <button class=" btn btn-outline-primary btn-lg"><a href="{% url 'users:edit_profile' user.username %}" class="link-dark link-offset-2 link-underline link-underline-opacity-0 mt-4 mx-1 ">Редактировать</a></button>
+      <button class=" btn btn-outline-danger btn-lg"><a href="#" class="link-dark link-offset-2 link-underline link-underline-opacity-0 mt-4 mx-1 ">Удалить</a></button>
+  </div>
+</div>
+{% endblock %}

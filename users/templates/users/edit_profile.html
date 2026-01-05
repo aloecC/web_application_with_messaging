@@ -1,0 +1,18 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Личный профиль{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Редактировать профиль</h2>
+    <div class="card col-4 text-center">
+        <form method="POST" enctype="multipart/form-data" class=" mt-3 w-100">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+    </form>
+        <button type="button" class="btn btn-light"><a class=" link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:user_detail' user.username %}">Вернуться назад</a></button>
+    </div>
+
+</div>
+{% endblock %}
