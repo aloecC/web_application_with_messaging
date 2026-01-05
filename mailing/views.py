@@ -232,18 +232,21 @@ class StartEmailAttemptView(View):
                 email_attempt.server_response = str(e)
 
                 # Сохраняем информацию о попытке
-                email_attempt.save()
+            email_attempt.save()
 
             campaign.status = 'Завершена'
             campaign.save()
+
             return redirect('mailing:campaign_detail', pk=pk)
 
 
 class StopEmailAttemptView(View):
-    pass
+    def post(self, request, pk):
+        campaign = get_object_or_404(Campaign, pk=pk)
+        campaign.status = 'Завершена'
+        campaign.save()
 
-
-
+        return redirect('mailing:campaign_detail', pk=pk)
 
 
 

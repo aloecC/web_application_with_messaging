@@ -25,7 +25,10 @@
         {% endif %}
         {% if campaign.status == 'Запущена' %}
         <div class=" col-3">
-            <a href="#" class="btn btn-secondary mt-3 text-end">Отменить рассылку</a>
+            <form method="post" action="{% url 'mailing:stop_email' campaign.pk %}">
+            {% csrf_token %}
+                <button type="submit" class="btn btn-secondary mt-3 text-end">Отменить рассылку</button>
+            </form>
         </div>
         {% endif %}
     </div>
