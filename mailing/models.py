@@ -22,7 +22,6 @@ class Message(models.Model):
     body = models.TextField(null=True, blank=True, verbose_name='Тело письма')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время создания')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата и время последнего обновления')
-    subscribers = models.ManyToManyField(Subscriber, related_name='messages')
 
     def __str__(self):
         return self.subject
