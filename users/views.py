@@ -6,21 +6,52 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DetailView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, FormView
 from django.core.mail import send_mail
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm
 from .models import CustomUser
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.urls import reverse
+from django.contrib import messages
 
 
-class RegisterView(CreateView):
+class RegisterView(FormView):
     template_name = 'users/register.html'
     form_class = CustomUserCreationForm
-    success_url = reverse_lazy('mailing:campaign_list')
+    success_url = reverse_lazy('users:verify')
 
     def form_valid(self, form):
-        user = form.save()
-        self.send_welcome_email(user.email)
+        form.send_verification_email()
+        self.request.session['verification_code'] = form.verification_code
+        messages.success(self.request, 'Код подтверждения отправлен на вашу электронную почту.')
         return super().form_valid(form)
+
+
+class VerifyView(FormView):
+    template_name = 'registration/verify.html'
+    form_class = CustomUserCreationForm
+
+    def post(self, request, *args, **kwargs):
+        code_entered = request.POST.get('verification_code')
+        if code_entered == request.session.get('verification_code'):
+            # Код подтвержден, теперь сохраняем пользователя
+            form = self.get_form()
+            if form.is_valid():
+                form.save()
+                #self.send_welcome_email(user.email)
+                messages.success(request, 'Регистрация завершена успешно!')
+                return redirect('mailing:campaign_list')  # Перенаправляем на страницу успеха
+        else:
+            messages.error(request, "Неверный код подтверждения.")
+
+        return self.form_invalid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['error_message'] = messages.get_messages(self.request)
+        return context
 
     def send_welcome_email(self, user_email):
         subject = 'Добро пожаловать в наш сервис!'

@@ -32,6 +32,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent #Настройка котор
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
+    'django.contrib.sites', #для генерации ссылок с подтверждением
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
@@ -39,6 +40,9 @@ INSTALLED_APPS = [
     'mailing',
     'users'
 ]
+
+SITE_ID = 1  # или другой ID сайта, который вы используете
+
 
 #Список приложений предосталяемых промежуточное ПО,которое обрабатывает входящие запрсы и исходящие ответы
 MIDDLEWARE = [
