@@ -6,25 +6,23 @@
 <div class="row">
     <div class="col-3">
     </div>
-    <div class="col-6">
-        <div class="card text-center mt-4">
-            {% if user.avatar %}
-                <img src="{{ user.avatar.url }}" class="card-img-top">
-            {% else %}
-                <li class="list-group-item">Добавьте фото пользователя</li>
-            {% endif %}
-            <div class="card-body">
-        <h5 class="card-title">{{ user.username }}</h5>
-            </div>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">Имя пользователя: {{ user.username }}</li>
-        <li class="list-group-item">Номер телефона: {{ user.phone_number }}</li>
-        <li class="list-group-item">Почта: {{ user.email }}</li>
-      </ul>
-      <div class="card-body text-end">
-          <button class=" btn btn-outline-primary"><a href="{% url 'users:edit_profile' user.username %}" class="link-dark link-offset-2 link-underline link-underline-opacity-0 mt-4 mx-1 ">Редактировать</a></button>
-          <button class=" btn btn-outline-danger"><a href="#" class="link-dark link-offset-2 link-underline link-underline-opacity-0 mt-4 mx-1 ">Удалить</a></button>
-      </div>
+    <div class="col-6 mt-3 border-bg-dark">
+        <div class="rounded text-start w-100 btn btn-outline-light border border-secondary-subtle">
+                <h6 class=" mt-2 text-success-emphasis">
+                    {% if user.avatar %}
+                        <div class="text-center">
+                            <img src="{{ user.avatar.url }}" style="width: auto; height: 250px;" >
+                        </div>
+                    {% else %}
+                        <p class="list-group-item">Добавьте фото пользователя</p>
+                    {% endif %}
+                    Имя пользователя: <p class="p-3 text-black-50 bg-white mt-1 text-center">{{ user.username }}</p>
+                    Номер телефона: <p class="p-3 text-black-50 bg-white mt-1 text-center">{{ user.phone_number }}</p>
+                    Почта: <p class="p-3  bg-white mt-1 text-center">{{ user.email }}</p>
+                    Статус подтверждения почты: <p class="p-3 bg-white mt-1 text-center">{{ user.email_confirmed }}</p>
+                    <a href="{% url 'users:edit_profile' user.username %}" class="btn btn-outline-secondary">Редактировать</a>
+                    <a href="#" class="btn btn-outline-danger ">Удалить</a>
+                </h6>
         </div>
     </div>
     <div class="col-3">

@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DetailView
-from django.views.generic.edit import CreateView, FormView
+from django.views.generic.edit import CreateView, FormView, UpdateView
 from django.core.mail import send_mail
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm, VerificationCodeForm, \
     ResetPasswordForm
@@ -144,7 +144,7 @@ class UserProfileEditView(LoginRequiredMixin, View):
         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect('mailing:campaign_list')  # Укажите свой URL для перенаправления после редактирования профиля
+            return redirect('users:user_detail')  # Укажите свой URL для перенаправления после редактирования профиля
         return render(request, 'users/edit_profile.html', {'form': form})
 
 
