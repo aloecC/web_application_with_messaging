@@ -155,3 +155,34 @@ class UserProfileForm(forms.ModelForm):
             }
         )
 
+
+class ResetPasswordForm(forms.Form):
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'password1', 'password2']
+
+    def __init__(self, *args, **kwargs):
+        super(ResetPasswordForm, self).__init__(*args, **kwargs)
+
+        self.fields['email'].widget.attrs.update(
+            {
+                'class': 'form-control',
+                'placeholder': 'Введите почту'
+            }
+        )
+
+        self.fields['password1'].widget.attrs.update(
+            {
+                'class': 'form-control',
+                'placeholder': 'Введите новый пароль'
+            }
+        )
+
+        self.fields['password2'].widget.attrs.update(
+            {
+                'class': 'form-control',
+                'placeholder': 'Повторно введите новый пароль'
+            }
+        )
+
