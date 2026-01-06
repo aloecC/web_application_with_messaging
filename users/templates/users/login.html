@@ -11,6 +11,7 @@
                 {{ form.as_p }}
                 <button type="submit" class="btn btn-primary">Войти</button>
             </form>
+            <p class="text-end"><a href="{% url 'users:password_reset' %}">Забыли пароль?</a></p>
         </div>
         <div class="col-4"></div>
     </div>

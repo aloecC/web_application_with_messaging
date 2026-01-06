@@ -4,7 +4,7 @@ from datetime import datetime
 from django import forms
 from django.core.files.images import get_image_dimensions
 
-from .models import Campaign
+from .models import Campaign, Subscriber
 from django.core.exceptions import ValidationError
 
 
@@ -15,7 +15,11 @@ class CampaignForm(forms.ModelForm):
         fields = ['message', 'subscribers', 'start_time', 'end_time']
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super(CampaignForm, self).__init__(*args, **kwargs)
+
+        if user:
+            self.fields['subscribers'].queryset = Subscriber.objects.filter(owner=user)
 
         self.fields['message'].widget.attrs.update(
             {
@@ -31,7 +35,6 @@ class CampaignForm(forms.ModelForm):
             }
         )
 
-
         self.fields['start_time'].widget.attrs.update(
             {
                 'class': 'form-control',
@@ -45,6 +48,9 @@ class CampaignForm(forms.ModelForm):
                 'placeholder': 'Введите дату и время конца отправки в формате YYYY-MM-DD HH:MM',
             }
         )
+
+
+
 
 
 

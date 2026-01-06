@@ -43,10 +43,10 @@
                             </div>
                         </div>
                         <div class="col-2"> <h6 class="text-center mt-1">
-                                                        <img src="https://img.icons8.com/?size=32&id=M7BZdWds6ih6&format=png">
-                                                        <img src="https://img.icons8.com/?size=32&id=53298&format=png">
-                                                        <img src="https://img.icons8.com/?size=32&id=43759&format=png">
-                                                        <img src="https://img.icons8.com/?size=32&id=57286&format=png">
+
+                                                        <img src="https://img.icons8.com/?size=32&id=csCGe54maMEs&format=png">
+                                                        <img src="https://img.icons8.com/?size=32&id=43928&format=png">
+
                                             </h6>
                         </div>
                         <div class="col-5">
@@ -56,25 +56,22 @@
                                         <div class="col-2"></div>
                                         <div class="col-2"></div>
                                         <div class="col-2 mt-1">
-                                            <h6 class="text-center mt-2">
-                                                <a href="#" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">#</a>
-                                            </h6>
                                         </div>
                                         <div class="col-2 mt-1">
-                                            <h6 class="text-center mt-2">
-                                                <a href="#" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">#</a>
+                                            <h6 class="text-center mt-2 mx-2">
+                                                <a href="{% url 'mailing:emailattempt_list' %}" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">Статистика</a>
                                             </h6>
                                         </div>
                                         {% if user.is_authenticated %}
                                         <div class="col-2 mt-1">
                                             <div class="col-2 mt-2">
                                                 <h6 class="text-center mt-2 dropdown-item text-white">
-                                                    <h6><a class="link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:user_detail' user.username %}">Профиль</a></h6>
+                                                    <h6><a class="mx-2 link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:user_detail' user.username %}">Профиль</a></h6>
                                                 </h6>
                                             </div>
                                         </div>
-                                        <div class="col-2">
-                                            <div class="col-2 mt-2">
+                                        <div class="col-2 mt-1">
+                                            <div class="col-2 mt-1">
                                                 <form method="post" action="{% url 'users:logout' %}">
                                                     {% csrf_token %}
                                                     <button class=" btn btn-light btn-sm "><h6>Выйти</h6></button>
@@ -82,13 +79,13 @@
                                             </div>
                                         </div>
                                         {% else %}
-                                        <div class="col-2">
-                                            <div class="col-2 mt-3">
+                                        <div class="col-2 mt-1">
+                                            <div class="col-2 mt-2 mx-4">
                                                 <h6><a class="link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:login' %}">Вход</a></h6>
                                             </div>
                                         </div>
-                                        <div class="col-2">
-                                            <div class="col-2 mt-3">
+                                        <div class="col-2 mt-1">
+                                            <div class="col-2 mt-2">
                                                 <h6><a class="link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:register' %}">Регистрация</a></h6>
                                             </div>
                                         </div>

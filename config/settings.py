@@ -145,8 +145,8 @@ EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465 # Исходящая почта, 992- Входящая почта
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'daryaaloets@yandex.ru'
-EMAIL_HOST_PASSWORD = 'hntaogjpldkgqvac'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 LOGIN_REDIRECT_URL = 'mailing:campaign_list'

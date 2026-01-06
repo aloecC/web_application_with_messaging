@@ -1,5 +1,7 @@
 from datetime import timezone
 import tkinter as tk
+
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.mail import send_mail
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
@@ -14,7 +16,7 @@ from mailing.forms import CampaignForm
 from mailing.models import Message, Subscriber, Campaign, EmailAttempt
 
 
-class MessageListView(ListView):
+class MessageListView(LoginRequiredMixin, ListView):
     model = Message
     template_name = 'mailing/messages_list.html'
     context_object_name = 'messages'
@@ -32,7 +34,7 @@ class MessageListView(ListView):
         return count
 
 
-class MessageDetailView(DetailView):
+class MessageDetailView(LoginRequiredMixin, DetailView):
     model = Message
     template_name = 'mailing/message_detail.html'
     context_object_name = 'message'
@@ -44,36 +46,36 @@ class MessageDetailView(DetailView):
         # Получаем сообщение из контекста
         message = self.object
 
-        # Получаем подписчиков, связанных с этим сообщением
-        context['subscribers'] = message.subscribers.all()
-
         return context
 
 
-class MessageCreateView(CreateView):
+class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
     template_name = 'mailing/message_form.html'
-    fields = ['subject', 'body', 'subscribers']
+    fields = ['subject', 'body']
     success_url = reverse_lazy('mailing:message_list')
 
 
-class MessageUpdateView(UpdateView):
+class MessageUpdateView(LoginRequiredMixin, UpdateView):
     model = Message
-    fields = ['subject', 'body', 'subscribers']
+    fields = ['subject', 'body']
     template_name = 'mailing/message_form.html'
     success_url = reverse_lazy('mailing:message_list')
 
 
-class MessageDeleteView(DeleteView):
+class MessageDeleteView(LoginRequiredMixin, DeleteView):
     model = Message
     template_name = 'mailing/message_confirm_delete.html'
     success_url = reverse_lazy('mailing:message_list')
 
 
-class SubscriberListView(ListView):
+class SubscriberListView(LoginRequiredMixin, ListView):
     model = Subscriber
     template_name = 'mailing/subscriber_list.html'
     context_object_name = 'subscribers'
+
+    def get_queryset(self):
+        return Subscriber.objects.filter(owner=self.request.user)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -81,88 +83,110 @@ class SubscriberListView(ListView):
         return context
 
     def get_count(self):
-        subscribers = Subscriber.objects.all()
+        subscribers = self.get_queryset()
         count = 0
         for subscriber in subscribers:
             count += 1
         return count
 
-    def get_queryset(self):
-        return Subscriber.objects.all()  # Получаем всех получателей
+    def test_func(self):
+        return True
 
 
-class SubscriberDetailView(DetailView):
+class SubscriberDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Subscriber
     template_name = 'mailing/subscriber_detail.html'
     context_object_name = 'subscriber'
 
+    def test_func(self):
+        subscriber = self.get_object()
+        return self.request.user == subscriber.owner
 
-class SubscriberCreateView(CreateView):
+
+class SubscriberCreateView(LoginRequiredMixin, CreateView):
     model = Subscriber
     template_name = 'mailing/subscriber_form.html'
     fields = ['email', 'full_name', 'comment']
     success_url = reverse_lazy('mailing:subscriber_list')
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user  # Устанавливаем владельца на текущего пользователя
+        return super().form_valid(form)
 
-class SubscriberUpdateView(UpdateView):
+
+class SubscriberUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Subscriber
     fields = ['email', 'full_name', 'comment']
     template_name = 'mailing/subscriber_form.html'
     success_url = reverse_lazy('mailing:subscriber_list')
 
+    def test_func(self):
+        subscriber = self.get_object()
+        return self.request.user == subscriber.owner
 
-class SubscriberDeleteView(DeleteView):
+
+class SubscriberDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Subscriber
     template_name = 'mailing/subscriber_confirm_delete.html'
     success_url = reverse_lazy('mailing:subscriber_list')
 
+    def test_func(self):
+        subscriber = self.get_object()
+        return self.request.user == subscriber.owner
 
-class CampaignListView(ListView):
+
+class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Campaign
     template_name = 'mailing/campaign_list.html'
     context_object_name = 'campaignes'
 
+    def get_queryset(self):
+        return Campaign.objects.filter(owner=self.request.user)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['campaignes'] = Campaign.objects.all()
         context['count'] = self.get_count()
         return context
 
     def get_count(self):
-        campaignes = Campaign.objects.all()
-        count = 0
-        for campaign in campaignes:
-            count += 1
-        return count
+        campaignes = self.get_queryset()
+        return campaignes.count()
 
-    def get_queryset(self):
-        return Campaign.objects.filter()
+    def test_func(self):
+        return True
 
 
-class CampaignView(View):
+class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
     model = Campaign
     template_name = 'mailing/home.html'
     context_object_name = 'campaignes'
 
     def get(self, request):
-        campaigns = Campaign.objects.all()
+        campaigns = self.get_user_campaigns()
+        subscribers = self.get_user_subscribers()
         active_campaigns = campaigns.filter(status='Запущена').count()
-        unique_recipients = set()
-
-        for campaign in campaigns:
-            unique_recipients.update(campaign.subscribers.values_list('email', flat=True))
+        unique_recipients = subscribers.filter(owner=self.request.user).count()
 
         context = {
             'campaignes': campaigns,
             'total_campaigns': campaigns.count(),
             'active_campaigns': active_campaigns,
-            'unique_recipients_count': len(unique_recipients),
+            'unique_recipients_count': unique_recipients,
         }
 
         return render(request, self.template_name, context)
 
+    def get_user_campaigns(self):
+        return Campaign.objects.filter(owner=self.request.user)
 
-class CampaignDetailView(DetailView):
+    def get_user_subscribers(self):
+        return Subscriber.objects.filter(owner=self.request.user)
+
+    def test_func(self):
+        return True
+
+
+class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Campaign
     template_name = 'mailing/campaign_detail.html'
     context_object_name = 'campaign'
@@ -174,37 +198,49 @@ class CampaignDetailView(DetailView):
         context['campaignes'] = Campaign.objects.all()
         return context
 
-    def get_queryset(self):
-        return Campaign.objects.all()
+    def test_func(self):
+        campaign = self.get_object()
+        return self.request.user == campaign.owner
 
 
-class CampaignCreateView(CreateView):
+class CampaignCreateView(LoginRequiredMixin, CreateView):
     model = Campaign
     form_class = CampaignForm
     template_name = 'mailing/campaign_form.html'
     success_url = reverse_lazy('mailing:campaign_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
-        response = super().form_valid(form)
-        print(f"Создана новая рассылка: {form.instance}")  # Отладочный вывод
-        return response
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 
-class CampaignUpdateView(UpdateView):
+class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Campaign
     form_class = CampaignForm
     template_name = 'mailing/campaign_form.html'
     success_url = reverse_lazy('mailing:campaign_list')
 
+    def test_func(self):
+        campaign = self.get_object()
+        return self.request.user == campaign.owner
 
-class CampaignDeleteView(DeleteView):
+
+class CampaignDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Campaign
     template_name = 'mailing/campaign_confirm_delete.html'
     success_url = reverse_lazy('mailing:campaign_list')
 
+    def test_func(self):
+        campaign = self.get_object()
+        return self.request.user == campaign.owner
 
-class StartEmailAttemptView(View):
 
+class StartEmailAttemptView(LoginRequiredMixin, View):
     def post(self, request, pk):
         campaign = get_object_or_404(Campaign, pk=pk)
         subscribers = campaign.subscribers.all()
@@ -214,6 +250,7 @@ class StartEmailAttemptView(View):
 
         for subscriber in subscribers:
             email_attempt = EmailAttempt(campaign=campaign, subscriber=subscriber)
+            email_attempt.owner = self.request.user
             try:
                 response = send_mail(
                     subject=f'{ campaign.message.subject }',
@@ -223,20 +260,22 @@ class StartEmailAttemptView(View):
                 )
                 # Если отправка успешна
                 email_attempt.status = 'successful'
+                email_attempt.subscriber = subscriber
 
-                email_attempt.server_response = f"Sent to {subscriber.full_name} with response {response}"
+                email_attempt.response = f"Sent to {subscriber.full_name} with response {response}"
             except Exception as e:
                 # Если произошла ошибка
                 email_attempt.status = 'failed'
-                email_attempt.server_response = str(e)
+                email_attempt.response = str(e)
 
                 # Сохраняем информацию о попытке
+            email_attempt.subscriber = subscriber
             email_attempt.save()
 
-            campaign.status = 'Завершена'
-            campaign.save()
+        campaign.status = 'Завершена'
+        campaign.save()
 
-            return redirect('mailing:campaign_detail', pk=pk)
+        return redirect('mailing:campaign_detail', pk=pk)
 
 
 class StopEmailAttemptView(View):
@@ -248,5 +287,49 @@ class StopEmailAttemptView(View):
         return redirect('mailing:campaign_detail', pk=pk)
 
 
+class EmailAttemptListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = EmailAttempt
+    template_name = 'mailing/emailattempt_list.html'
+    context_object_name = 'emailattempts'
 
+    def get_queryset(self):
+        # Фильтруем email attempts по текущему пользователю
+        return EmailAttempt.objects.filter(owner=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        emailattempts = self.get_queryset()
+
+        count_successful = emailattempts.filter(status='successful').count()
+        count_failed = emailattempts.filter(status='failed').count()
+        count_all = emailattempts.all().count()
+
+        context['count_successful'] = count_successful
+        context['count_failed'] = count_failed
+        context['count_all'] = count_all
+
+        return context
+
+    def test_func(self):
+        return True
+
+
+class EmailAttemptDeleteView(LoginRequiredMixin, UserPassesTestMixin,  DeleteView):
+    model = EmailAttempt
+    template_name = 'mailing/emailattempt_confirm_delete.html'
+    success_url = reverse_lazy('mailing:emailattempt_list')
+
+    def test_func(self):
+        emailattempt = self.get_object()
+        return self.request.user == emailattempt.owner
+
+
+class EmailAttemptDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    model = EmailAttempt
+    template_name = 'mailing/emailattempt_detail.html'
+    context_object_name = 'emailattempt'
+
+    def test_func(self):
+        emailattempt = self.get_object()
+        return self.request.user == emailattempt.owner
 

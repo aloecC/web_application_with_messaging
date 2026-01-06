@@ -3,7 +3,8 @@ from . import views
 from .views import MessageDeleteView, MessageUpdateView, MessageCreateView, MessageDetailView, MessageListView, \
     SubscriberListView, SubscriberDeleteView, SubscriberUpdateView, SubscriberCreateView, SubscriberDetailView, \
     CampaignCreateView, CampaignDetailView, CampaignUpdateView, CampaignDeleteView, CampaignListView, \
-    CampaignView, StartEmailAttemptView, StopEmailAttemptView
+    CampaignView, StartEmailAttemptView, StopEmailAttemptView, EmailAttemptListView, EmailAttemptDetailView, \
+    EmailAttemptDeleteView
 
 #Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
 app_name = 'mailing'
@@ -14,8 +15,6 @@ app_name = 'mailing'
 
 urlpatterns = [
     path('messages/', MessageListView.as_view(), name='message_list'),
-    path('campaign/start/<int:pk>/', StartEmailAttemptView.as_view(), name='start_email'),
-    path('campaign/stop/<int:pk>/', StopEmailAttemptView.as_view(), name='stop_email'),
     path('message/<int:pk>/', MessageDetailView.as_view(), name='message_detail'),
     path('message/new/', MessageCreateView.as_view(), name='message_create'),
     path('message/<int:pk>/edit/', MessageUpdateView.as_view(), name='message_edit'),
@@ -26,9 +25,14 @@ urlpatterns = [
     path('subscriber/<int:pk>/edit/', SubscriberUpdateView.as_view(), name='subscriber_edit'),
     path('subscriber/<int:pk>/delete/', SubscriberDeleteView.as_view(), name='subscriber_delete'),
     path('campaign/<int:pk>/', CampaignDetailView.as_view(), name='campaign_detail'),
+    path('campaign/start/<int:pk>/', StartEmailAttemptView.as_view(), name='start_email'),
+    path('campaign/stop/<int:pk>/', StopEmailAttemptView.as_view(), name='stop_email'),
     path('campaign/new/', CampaignCreateView.as_view(), name='campaign_create'),
     path('campaigns/', CampaignListView.as_view(), name='campaign_list'),
     path('home/', CampaignView.as_view(), name='home'),
     path('campaign/<int:pk>/edit/', CampaignUpdateView.as_view(), name='campaign_edit'),
     path('campaign/<int:pk>/delete/', CampaignDeleteView.as_view(), name='campaign_delete'),
+    path('emailattempts/', EmailAttemptListView.as_view(), name='emailattempt_list'),
+    path('emailattempt/<int:pk>/', EmailAttemptDetailView.as_view(), name='emailattempt_detail'),
+    path('emailattempt/<int:pk>/delete/', EmailAttemptDeleteView.as_view(), name='emailattempt_delete')
 ]

@@ -8,6 +8,8 @@ class CustomUser(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     email_confirmed = models.BooleanField(default=False)
 
+    verification_code = models.CharField(max_length=6, blank=True, null=True)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username',]
 
