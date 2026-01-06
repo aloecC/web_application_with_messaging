@@ -14,8 +14,10 @@
     </div>
 </div>
 <div class="text-end">
-    <a href="{% url 'mailing:subscriber_edit' subscriber.pk %}" class="btn btn-outline-secondary">Редактировать</a>
+    {% if not is_manager %}
+        <a href="{% url 'mailing:subscriber_edit' subscriber.pk %}" class="btn btn-outline-secondary">Редактировать</a>
         <a href="{% url 'mailing:subscriber_delete' subscriber.pk %}" class="btn btn-outline-danger">Удалить</a>
+    {% endif %}
         <a href="{% url 'mailing:subscriber_list' %}" class="btn btn-outline-dark">Вернуться к списку</a>
 </div>
 <div class=" mt-5">

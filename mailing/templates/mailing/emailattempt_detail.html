@@ -3,8 +3,9 @@
 {% block title%}Информация о Рассылке{% endblock %}
 
 {% block content %}
+<h4 class=" container mt-4 link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover ">Отчет о рассылке </h4>
 <div class="row rounded mt-3 card">
-    <h4 class=" container link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover ">Отчет о рассылке </h4>
+
     <div class="col-12 text-start container">
         <h6 class=" mt-2 text-success-emphasis">Тема письма: {{ emailattempt.campaign.message.subject }}</h6>
         <h6 class=" mt-2 text-success-emphasis">Получатель: {{ emailattempt.subscriber }}</h6>

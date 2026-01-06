@@ -1,13 +1,20 @@
 {% extends 'mailing/base.html' %}
 {% block title %} Удаление сообщения {% endblock %}
 {% block content %}
-   <div class="container mt-5">
-        <h3 class="mb-3">Удаление сообщения</h3>
-        <p>Вы действительно хотите удалить {{ campaign.message }}?</p>
-       <form method="post" action="{% url 'mailing:campaign_delete' campaign.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger"> Подтвердить </button>
-            <a href="{% url 'mailing:campaign_list' %}" class="btn btn-primary"> Отменить </a>
-        </form>
+    <div class="row">
+        <div class="col-12 mt-5">
+            <div class="col-3"></div>
+                <div class="container col-6 mt-5">
+                    <h3 class="mt-2 mx-2">Удаление сообщения</h3>
+                    <p>Вы действительно хотите удалить {{ campaign.message }}?</p>
+                    <form method="post"  class="text-end" action="{% url 'mailing:campaign_delete' campaign.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger "> Подтвердить </button>
+                        <a href="{% url 'mailing:campaign_list' %}" class="btn btn-primary "> Отменить </a>
+                    </form>
+                </div>
+            <div class="col-3"></div>
+        </div>
     </div>
+
 {% endblock %}

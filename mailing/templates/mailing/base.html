@@ -21,18 +21,26 @@
                                                 <a href="{% url 'mailing:home' %}" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">Главная</a>
                                             </h6>
                                         </div>
+                                        <div class="col-1 mt-2">
+                                            <img src="https://cdn-icons-png.flaticon.com/128/649/649686.png" style="width: 10px; height: 25px;">
+                                        </div>
                                         <div class="col-2 mt-1">
                                             <h6 class="text-center mt-2 mx-1">
                                                 <a href="{% url 'mailing:message_list' %}" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">Письма</a>
                                             </h6>
                                         </div>
-                                        <div class="col-2 mt-1">
-                                            <h6 class="text-center mt-2">
+                                        <div class="col-1 mt-2">
+                                            <img src="https://cdn-icons-png.flaticon.com/128/649/649686.png" style="width: 10px; height: 25px;">
+                                        </div>
+                                        <div class="col-2 mt-1 ">
+                                            <h6 class="text-center mt-2 mx-1">
                                                 <a href="{% url 'mailing:subscriber_list' %}" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">Получатели</a>
-                                            </h6>
+                                        </div>
+                                        <div class="col-1 mt-2 mx-3">
+                                            <img src="https://cdn-icons-png.flaticon.com/128/649/649686.png" style="width: 10px; height: 25px;">
                                         </div>
                                         <div class="col-2 mt-1">
-                                            <h6 class="text-center mt-2 mx-3">
+                                            <h6 class="text-center mt-2 mx-1">
                                                 <a href="{% url 'mailing:campaign_list' %}" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">Рассылки</a>
                                             </h6>
                                         </div>
@@ -53,14 +61,22 @@
                             <div class="row">
                                 <div class="col-12 bg-body">
                                     <div class="row">
-                                        <div class="col-2"></div>
-                                        <div class="col-2"></div>
+
                                         <div class="col-2 mt-1">
+                                            <h6 class="col-2 mt-2">
+                                                    <a href="{% url 'mailing:contacts' %}" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">Поддержка</a>
+                                            </h6>
+                                        </div>
+                                        <div class="col-1 mt-2 mx-1">
+                                            <img src="https://cdn-icons-png.flaticon.com/128/649/649686.png" style="width: 10px; height: 25px;">
                                         </div>
                                         <div class="col-2 mt-1">
-                                            <h6 class="text-center mt-2 mx-2">
-                                                <a href="{% url 'mailing:emailattempt_list' %}" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">Статистика</a>
+                                            <h6 class="text-center mt-2">
+                                                    <a href="{% url 'mailing:emailattempt_list' %}" class="link-offset-2 link-underline link-underline-opacity-0 link-dark">Статистика</a>
                                             </h6>
+                                        </div>
+                                        <div class="col-1 mt-2 mx-1">
+                                            <img src="https://cdn-icons-png.flaticon.com/128/649/649686.png" style="width: 10px; height: 25px;">
                                         </div>
                                         {% if user.is_authenticated %}
                                         <div class="col-2 mt-1">
@@ -69,6 +85,9 @@
                                                     <h6><a class="mx-2 link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:user_detail' user.username %}">Профиль</a></h6>
                                                 </h6>
                                             </div>
+                                        </div>
+                                        <div class="col-1 mt-2 mx-1">
+                                            <img src="https://cdn-icons-png.flaticon.com/128/649/649686.png" style="width: 10px; height: 25px;">
                                         </div>
                                         <div class="col-2 mt-1">
                                             <div class="col-2 mt-1">
@@ -84,11 +103,15 @@
                                                 <h6><a class="link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:login' %}">Вход</a></h6>
                                             </div>
                                         </div>
+                                        <div class="col-1 mt-2 mx-1">
+                                            <img src="https://cdn-icons-png.flaticon.com/128/649/649686.png" style="width: 10px; height: 25px;">
+                                        </div>
                                         <div class="col-2 mt-1">
                                             <div class="col-2 mt-2">
                                                 <h6><a class="link-offset-2 link-underline link-underline-opacity-0 link-dark" href="{% url 'users:register' %}">Регистрация</a></h6>
                                             </div>
                                         </div>
+
                                         {% endif %}
                                     </div>
                                 </div>

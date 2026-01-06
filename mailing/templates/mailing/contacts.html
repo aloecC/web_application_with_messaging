@@ -1,0 +1,37 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Поддержка{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6 mt-2">
+            <div class="container mt-5 text-center">
+                <div class="card text-center border border-black w-100 mb-3 mt-5">
+                    <div class="card-header">
+                        <h1>Свяжитесь с нами <img src="https://cdn-icons-png.flaticon.com/128/684/684840.png" class="mx-1" style="width: auto; height: 40px;"></h1>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Ваше имя</label>
+                                <input type="text" class="form-control" placeholder="Иван Иванов" id="name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Ваш email</label>
+                                <input class="form-control" placeholder="ivanov@mail.ru" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Ваше сообщение</label>
+                                <textarea class="form-control" id="message" placeholder="У меня возникла проблема... Помогите решить" name="message" rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-dark w-100">Отправить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-3"></div>
+    </div>
+{% endblock %}

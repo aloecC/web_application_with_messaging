@@ -1,13 +1,16 @@
 {% extends 'mailing/base.html' %}
 
-{% block title%}Главная{% endblock %}
+{% block title%} Главная {% endblock %}
 
 {% block content %}
-<div class="card p-3 mt-5">
-    <h1>Главная</h1>
+<div class="card p-3 mt-5 rounded border-dark">
     <p>Общее количество рассылок: {{ total_campaigns }}</p>
     <p>Количество активных рассылок: {{ active_campaigns }}</p>
     <p>Количество уникальных получателей: {{ unique_recipients_count }}</p>
+    <p>Количество отправителей:</p>
+    {% if is_manager %}
+        <a href="#" class="btn btn-outline-secondary">Перейти к отправителям</a>
+    {% endif %}
 </div>
 
 {% endblock %}
