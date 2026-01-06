@@ -5,12 +5,15 @@ from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
 
+from users.models import CustomUser
+
 
 class Subscriber(models.Model):
     '''Модель «Получатель рассылки»'''
     email = models.EmailField(unique=True, verbose_name='Почта')
     full_name = models.CharField(max_length=255, verbose_name='Ф.И.О.')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='subscriber_owner', default=1)
 
     def __str__(self):
         return self.full_name
@@ -39,7 +42,6 @@ class Campaign(models.Model):
     def get_default_start_time(self):
         return timezone.make_aware(datetime.combine(timezone.now().date(), time(12, 0)))
 
-
     def get_default_end_time(self):
         return timezone.make_aware(datetime.combine(timezone.now().date(), time(22, 0)))
 
@@ -49,6 +51,9 @@ class Campaign(models.Model):
     first_sent_at = models.DateTimeField( verbose_name='Дата и время первой отправки', blank=True, null=True)
     end_time = models.DateTimeField(verbose_name='Дата и время окончания отправки', blank=False, null=False)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Создана', verbose_name='Статус')
+
+    status_active = models.BooleanField(verbose_name='Возможность рассылки', default=True)
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='campaign_owner', default=1)
 
     def clean(self):
 
@@ -99,6 +104,8 @@ class EmailAttempt(models.Model):
     sent_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время попытки')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, verbose_name='Статус',)
     response = models.TextField(verbose_name='Ответ почтового сервера')
+
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='emailattempt_owner', default=1)
 
     def __str__(self):
         return f"Попытка отправки для {self.subscriber.email} - {self.status}"

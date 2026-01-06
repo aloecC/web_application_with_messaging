@@ -15,21 +15,13 @@
     </div>
 </div>
 <div class="text-end">
-    <a href="{% url 'mailing:message_edit' message.pk %}" class="btn btn-secondary">Редактировать</a>
-        <a href="{% url 'mailing:message_delete' message.pk %}" class="btn btn-danger">Удалить</a>
-        <a href="{% url 'mailing:message_list' %}" class="btn btn-primary">Вернуться к списку</a>
+    <a href="{% url 'mailing:message_edit' message.pk %}" class="btn btn-outline-secondary">Редактировать</a>
+        <a href="{% url 'mailing:message_delete' message.pk %}" class="btn btn-outline-danger">Удалить</a>
+        <a href="{% url 'mailing:message_list' %}" class="btn btn-outline-dark">Вернуться к списку</a>
 </div>
 <div class=" mt-5">
         <span class="border border-white"></span>
 </div>
 <div>
-    <div class="col-3">
-                    <h4>Список получателей:</h4>
-                </div>
-    {% for subscriber in subscribers %}
-                <div class="col-6 mt-3  text-center">
-                    <button class="rounded text-center w-100 btn btn-outline-light border border-secondary-subtle"><a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'mailing:subscriber_detail' subscriber.pk %}">{{ subscriber.email }}</a></button>
-                </div>
-    {% endfor %}
 </div>
 {% endblock %}

@@ -7,7 +7,10 @@
     </div>
         <div class="row text-center">
             <div class="col-12 mt-1">
-                 <h4 class="mb-4 text-center mt-5">Отчеты</h4>
+                 <h3 class="mb-4 text-center mt-1">Отчеты</h3>
+            </div>
+            <div class="col-12 mt-1">
+                 <h5 class="mb-4 text-center mt-1"> Успешных: {{ count_successful }}  | Неудачных: {{ count_failed }} | Всего: {{ count_all }}</h5>
             </div>
                 <div class="col-4 mt-3">
                 </div>
@@ -26,7 +29,7 @@
                                             Статус: <p class="p-3 bg-white mt-1 text-danger">{{ emailattempt.status }}</p>
                                             {% endif %}</h6>
                                         <h6>Ответ почтового сервера: <p class="p-3 text-black-50 bg-white mt-1">{{ emailattempt.response }}</p>
-                                        Дата отправки: <p class="p-3 text-black-50 bg-white rounded mt-1">{{ emailattempt.sent_at }}</p></h6>
+                                        Дата отправки: <p class="p-3 text-black-50 bg-white rounded mt-1">{{ emailattempt.sent_at|date:"d/m/Y" }}</p></h6>
                                 </a>
                             </button>
                         </p>

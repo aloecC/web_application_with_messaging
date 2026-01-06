@@ -25,11 +25,9 @@ class VerificationCodeForm(forms.Form):
         )
 
     def clean_verification_code(self):
-        code = self.verification_code
+        code = self.cleaned_data.get('verification_code')
         if not code.isdigit() or len(code) != 6:
             raise forms.ValidationError("Код должен состоять из 6 цифр.")
-        if code != CustomUserCreationForm.verification_code:
-            raise forms.ValidationError("Неверный код подтверждения.")
         return code
 
 
@@ -37,7 +35,6 @@ class CustomUserCreationForm(UserCreationForm):
     phone_number = forms.CharField(max_length=15, required=False)
     username = forms.CharField(max_length=50, required=True)
     usable_password = None
-    verification_code = forms.CharField(max_length=6, required=False, label='Код подтверждения')
 
     class Meta:
         model = CustomUser
@@ -45,6 +42,8 @@ class CustomUserCreationForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(CustomUserCreationForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
 
         self.fields['email'].widget.attrs.update(
             {
@@ -96,27 +95,13 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError('номер телефона должен остоять только их цифр')
         return phone_number
 
-    def send_verification_email(self):
-        user_email = self.cleaned_data.get('email')
-        verification_code = str(random.randint(100000, 999999))  # Генерация 6-значного кода
-        # Сохраните код в пользовательской модели или сессии для дальнейшей проверки
-        self.verification_code = verification_code
-
-        # Отправка письма
-        send_mail(
-            'Ваш код подтверждения',
-            f'Ваш код подтверждения: {verification_code}',
-            settings.DEFAULT_FROM_EMAIL,
-            [user_email],
-            fail_silently=False,
-        )
-
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         if commit:
             user.save()
         return user
+
 
 class CustomAuthenticationForm(AuthenticationForm):
     username = forms.EmailField(max_length=50, required=True, widget=forms.TextInput(attrs={

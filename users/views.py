@@ -1,7 +1,12 @@
+import random
+
+
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
+from django.http import request
+
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -23,28 +28,50 @@ class RegisterView(FormView):
     success_url = reverse_lazy('users:verify')
 
     def form_valid(self, form):
-        form.send_verification_email()
-        self.request.session['verification_code'] = form.verification_code
+        user = form.save()
+        verification_code = self.send_verification_email(user.email)
+        user.verification_code = verification_code
+        request.session['email'] = user.email
         messages.success(self.request, 'Код подтверждения отправлен на вашу электронную почту.')
-        return super().form_valid(form)
+        return redirect(self.success_url)
+
+    def send_verification_email(self, user_email):
+        verification_code = str(random.randint(100000, 999999))  # Генерация 6-значного кода
+
+        send_mail(
+            'Ваш код подтверждения',
+            f'Ваш код подтверждения: {verification_code}',
+            'daryaaloets@yandex.ru',
+            [user_email],
+            fail_silently=False,
+        )
+
+        return verification_code
 
 
 class VerifyView(FormView):
     template_name = 'users/verify.html'
+    user = CustomUser
     form_class = VerificationCodeForm
 
     def post(self, request, *args, **kwargs):
-        code_entered = request.POST.get('verification_code')
-        if code_entered == request.session.get('verification_code'):
+        form = self.get_form()
+        if form.is_valid():
+            code_entered = form.cleaned_data['verification_code']
+            try:
+                user = CustomUser.objects.get(
+                    email=request.session['email'])
+                if code_entered == user.verification_code:
+                    user.email_confirmed = True
+                    user.save()
+                    messages.success(request, 'Регистрация завершена успешно!')
 
-            form = self.get_form()
-            if form.is_valid():
-                form.save()
-                #self.send_welcome_email(user.email)
-                messages.success(request, 'Регистрация завершена успешно!')
-                return redirect('mailing:campaign_list')
-        else:
-            messages.error(request, "Неверный код подтверждения.")
+                    self.send_welcome_email(user.email)
+                    return redirect('mailing:campaign_list')
+                else:
+                    messages.error(request, "Неверный код подтверждения.")
+            except CustomUser.DoesNotExist:
+                messages.error(request, "Пользователь не найден.")
 
         return self.form_invalid(form)
 
@@ -52,6 +79,7 @@ class VerifyView(FormView):
         context = super().get_context_data(**kwargs)
         context['error_message'] = messages.get_messages(self.request)
         return context
+
 
     def send_welcome_email(self, user_email):
         subject = 'Добро пожаловать в наш сервис!'
