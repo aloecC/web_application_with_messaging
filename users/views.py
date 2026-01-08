@@ -16,6 +16,8 @@ from django.views import View
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, FormView, UpdateView
 from django.core.mail import send_mail
+
+from mailing.models import Campaign, Subscriber
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm, VerificationCodeForm, \
     ResetPasswordForm
 from .models import CustomUser
@@ -130,7 +132,26 @@ class LoginView(View):
 class UserDetailView(View):
     def get(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
-        return render(request, 'users/user_detail.html', {'user': user})
+        context = {
+            'user': user,
+            'is_manager': self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists(),
+            'subscribers_count': Subscriber.objects.filter(owner=user).count(),
+            'campaign_count': Campaign.objects.filter(owner=user).count(),
+            'is_owner_profile': user.pk == self.request.user.pk
+        }
+        return render(request, 'users/user_detail.html', context)
+
+
+class UsersListView(View):
+    def get(self, request):
+        users = CustomUser.objects.all()
+
+        context = {
+            'users': users,
+            'users_count': users.count()
+        }
+
+        return render(request, 'users/users_list.html', context)
 
 
 class UserProfileEditView(LoginRequiredMixin, View):
@@ -142,6 +163,7 @@ class UserProfileEditView(LoginRequiredMixin, View):
     def post(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+
         if form.is_valid():
             form.save()
             return redirect('users:user_detail')  # Укажите свой URL для перенаправления после редактирования профиля

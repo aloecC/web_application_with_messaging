@@ -20,8 +20,21 @@
                     Номер телефона: <p class="p-3 text-black-50 bg-white mt-1 text-center">{{ user.phone_number }}</p>
                     Почта: <p class="p-3  bg-white mt-1 text-center">{{ user.email }}</p>
                     Статус подтверждения почты: <p class="p-3 bg-white mt-1 text-center">{{ user.email_confirmed }}</p>
-                    <a href="{% url 'users:edit_profile' user.username %}" class="btn btn-outline-secondary">Редактировать</a>
-                    <a href="#" class="btn btn-outline-danger ">Удалить</a>
+
+                    {% if is_manager %}
+                        Количество клиентов: <p class="p-3 bg-white mt-1 text-center">{{ subscribers_count }}</p>
+                        Количество рассылок: <p class="p-3 bg-white mt-1 text-center">{{ campaign_count }}</p>
+                        Количество жалоб: <p class="p-3 bg-white mt-1 text-center"></p>
+                    <div class="col-12 text-end">
+                        <a href="#" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/4461/4461002.png" style="width: auto; height: 40px;" title="Блокировать"></a>
+                    {% endif %}
+                    {% if is_owner_profile %}
+                        <a href="{% url 'users:edit_profile' user.username %}" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/5362/5362748.png" style="width: auto; height: 40px;" title="Редактировать"></a>
+                        <a href="#" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/8134/8134441.png" style="width: auto; height: 40px;" title="Удалить"></a>
+                    {% else %}
+                        <a href="#" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/4460/4460495.png" style="width: auto; height: 40px;" title="Пожаловаться"></a>
+                    {% endif %}
+                    </div>
                 </h6>
         </div>
     </div>

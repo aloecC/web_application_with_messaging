@@ -14,6 +14,7 @@ from pip._internal.models.link import Link
 from config.settings import EMAIL_HOST_USER
 from mailing.forms import CampaignForm
 from mailing.models import Message, Subscriber, Campaign, EmailAttempt
+from users.models import CustomUser
 
 
 class MessageListView(LoginRequiredMixin, ListView):
@@ -185,18 +186,21 @@ class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
         campaigns = self.get_user_campaigns()
         subscribers = self.get_user_subscribers()
         active_campaigns = campaigns.filter(status='Запущена').count()
-        unique_recipients = self.get_user_subscribers
+
         if not self.request.user.groups.filter(name='Менеджер').exists():
             unique_recipients = subscribers.filter(owner=self.request.user).count()
         else:
             unique_recipients = subscribers.all().count()
+
+        users_count = CustomUser.objects.all().count()
 
         context = {
             'campaignes': campaigns,
             'total_campaigns': campaigns.count(),
             'active_campaigns': active_campaigns,
             'unique_recipients_count': unique_recipients,
-            'is_manager': self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+            'is_manager': self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists(),
+            'users_count': CustomUser.objects.all().count()
         }
 
         return render(request, self.template_name, context)
