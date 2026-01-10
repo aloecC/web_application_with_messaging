@@ -9,7 +9,7 @@
     <div class="col-3"></div>
     <div class="col-6 mt-2  text-center">
         {% for subscriber in subscribers %}
-            <button class="rounded text-center mt-3 w-100 btn btn-outline-light border border-secondary-subtle"><a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'mailing:subscriber_detail' subscriber.pk %}">
+            <button class="rounded text-center mt-3 w-100 btn btn-outline-light border border-secondary-subtle"><a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'mailing:subscriber_detail' subscriber.pk %}" title="{{ subscriber.full_name }}">
                 {{ subscriber.email }} </a></button>
         {% endfor %}
     </div>

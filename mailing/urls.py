@@ -4,7 +4,7 @@ from .views import MessageDeleteView, MessageUpdateView, MessageCreateView, Mess
     SubscriberListView, SubscriberDeleteView, SubscriberUpdateView, SubscriberCreateView, SubscriberDetailView, \
     CampaignCreateView, CampaignDetailView, CampaignUpdateView, CampaignDeleteView, CampaignListView, \
     CampaignView, StartEmailAttemptView, StopEmailAttemptView, EmailAttemptListView, EmailAttemptDetailView, \
-    EmailAttemptDeleteView, ContactsTemplateView
+    EmailAttemptDeleteView, ContactsTemplateView, EmailAttemptSuccessfulListView, EmailAttemptFailedListView
 
 #Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
 app_name = 'mailing'
@@ -34,6 +34,8 @@ urlpatterns = [
     path('campaign/<int:pk>/edit/', CampaignUpdateView.as_view(), name='campaign_edit'),
     path('campaign/<int:pk>/delete/', CampaignDeleteView.as_view(), name='campaign_delete'),
     path('emailattempts/', EmailAttemptListView.as_view(), name='emailattempt_list'),
+    path('emailattempts/successful/', EmailAttemptSuccessfulListView.as_view(), name='emailattempt_list_successful'),
+    path('emailattempts/failed/', EmailAttemptFailedListView.as_view(), name='emailattempt_list_failed'),
     path('emailattempt/<int:pk>/', EmailAttemptDetailView.as_view(), name='emailattempt_detail'),
     path('emailattempt/<int:pk>/delete/', EmailAttemptDeleteView.as_view(), name='emailattempt_delete'),
 

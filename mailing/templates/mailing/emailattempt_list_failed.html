@@ -7,16 +7,17 @@
     </div>
         <div class="row text-center">
             <div class="col-12 mt-1">
-                <h4 class="mb-4 text-center mt-1"><img src="https://cdn-icons-png.flaticon.com/128/684/684831.png" class="mx-1" style="width: auto; height: 28px;"><a href="{% url 'mailing:emailattempt_list' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Отчеты</a></h4>
+                 <h4 class="mb-4 text-center mt-1"><img src="https://cdn-icons-png.flaticon.com/128/684/684831.png" class="mx-1" style="width: auto; height: 28px;"><a href="{% url 'mailing:emailattempt_list' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Отчеты</a></h4>
             </div>
             {% if emailattempts %}
             <div class="col-12 mt-1">
-                <h5 class="mb-4 text-center mt-1"> <a href="{% url 'mailing:emailattempt_list_successful' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Успешных:</a> {{ count_successful }}  | <a href="{% url 'mailing:emailattempt_list_failed' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Неудачных:</a> {{ count_failed }} | <a href="{% url 'mailing:emailattempt_list' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Всего:</a> {{ count_all }}</h5>
+                <h5 class="mb-4 text-center mt-1">Всего: {{ count_failed }}</h5>
             </div>
             <div class="row">
                 <div class="col-12">
                     <div class="row">
                         {% for emailattempt in emailattempts %}
+
                         <div class="col-4 mt-3 text-center">
                             <h4 class="mt-4 text-start"></h4>
                             <p class="text-start">
@@ -36,14 +37,14 @@
                                 </button>
                             </p>
                         </div>
+
                         {% endfor %}
                     </div>
                 </div>
             </div>
             {% else %}
                     <div class="col-12">
-                        <h4 class="text-center">Нет доступных отчетов - <a href="{% url 'mailing:campaign_list' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0"> запустите рассылку</a></h4>
-                    </div>
+                        <h4 class="text-center">Нет рассылок со статусом 'failed' </h4>
             {% endif %}
 
 

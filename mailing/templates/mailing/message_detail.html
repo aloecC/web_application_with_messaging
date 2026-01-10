@@ -15,9 +15,10 @@
     </div>
 </div>
 <div class="text-end">
-    <a href="{% url 'mailing:message_edit' message.pk %}" class="btn btn-outline-secondary">Редактировать</a>
-        <a href="{% url 'mailing:message_delete' message.pk %}" class="btn btn-outline-danger">Удалить</a>
-        <a href="{% url 'mailing:message_list' %}" class="btn btn-outline-dark">Вернуться к списку</a>
+    <a href="{% url 'mailing:message_list' %}" ><img src="https://cdn-icons-png.flaticon.com/128/2728/2728745.png" style="width: auto; height: 35px;" class="mx-1" title="Вернуться к списку"></a>
+    <a href="{% url 'mailing:message_edit' message.pk %}"><img src="https://cdn-icons-png.flaticon.com/128/8203/8203722.png" style="width: auto; height: 35px;" class="mx-1" title="Редактировать"></a>
+    <a href="{% url 'mailing:message_delete' message.pk %}"><img src="https://cdn-icons-png.flaticon.com/128/5074/5074264.png" style="width: auto; height: 35px;" class="mx-1" title="Удалить"></a>
+
 </div>
 <div class=" mt-5">
         <span class="border border-white"></span>

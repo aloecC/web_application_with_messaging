@@ -14,11 +14,12 @@
     </div>
 </div>
 <div class="text-end">
-    {% if not is_manager %}
-        <a href="{% url 'mailing:subscriber_edit' subscriber.pk %}" class="btn btn-outline-secondary">Редактировать</a>
-        <a href="{% url 'mailing:subscriber_delete' subscriber.pk %}" class="btn btn-outline-danger">Удалить</a>
+        <a href="{% url 'mailing:subscriber_list' %}" ><img src="https://cdn-icons-png.flaticon.com/128/2728/2728745.png" style="width: auto; height: 35px;" title="Вернуться к списку" class="mx-1"></a>
+    {% if is_owner %}
+        <a href="{% url 'mailing:subscriber_edit' subscriber.pk %}"><img src="https://cdn-icons-png.flaticon.com/128/8203/8203722.png" style="width: auto; height: 35px;" title="Редактировать" class="mx-1"></a>
+        <a href="{% url 'mailing:subscriber_delete' subscriber.pk %}" ><img src="https://cdn-icons-png.flaticon.com/128/5074/5074264.png" style="width: auto; height: 35px;" title="Удалить" class="mx-1"></a>
     {% endif %}
-        <a href="{% url 'mailing:subscriber_list' %}" class="btn btn-outline-dark">Вернуться к списку</a>
+
 </div>
 <div class=" mt-5">
         <span class="border border-white"></span>

@@ -17,6 +17,7 @@ from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, FormView, UpdateView
 from django.core.mail import send_mail
 
+from config.settings import DEFAULT_FROM_EMAIL
 from mailing.models import Campaign, Subscriber
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm, VerificationCodeForm, \
     ResetPasswordForm
@@ -48,7 +49,7 @@ class RegisterView(FormView):
         send_mail(
             'Ваш код подтверждения',
             f'Ваш код подтверждения: {verification_code}',
-            'daryaaloets@yandex.ru',
+            DEFAULT_FROM_EMAIL,
             [user_email],
             fail_silently=False,
         )
@@ -96,7 +97,7 @@ class VerifyView(FormView):
     def send_welcome_email(self, user_email):
         subject = 'Добро пожаловать в наш сервис!'
         message = 'Спасибо что зарегистрировались!'
-        from_email = 'daryaaloets@yandex.ru'
+        from_email = DEFAULT_FROM_EMAIL
         recipient_list = [user_email,]
         send_mail(subject, message, from_email, recipient_list)
 
@@ -124,7 +125,7 @@ class LoginView(View):
     def send_login_email(self, user_email):
         subject = 'Произведена попытка входа'
         message = 'Если это не вы - смените пароль по ссылке ниже'
-        from_email = 'daryaaloets@yandex.ru'
+        from_email = DEFAULT_FROM_EMAIL
         recipient_list = [user_email,]
         send_mail(subject, message, from_email, recipient_list)
 
@@ -166,58 +167,7 @@ class UserProfileEditView(LoginRequiredMixin, View):
 
         if form.is_valid():
             form.save()
-            return redirect('users:user_detail')  # Укажите свой URL для перенаправления после редактирования профиля
+            return redirect('users:user_detail', username=user.username)  # Укажите свой URL для перенаправления после редактирования профиля
         return render(request, 'users/edit_profile.html', {'form': form})
 
-
-class PasswordResetView(View):
-    template_name = 'users/password_reset_form.html '
-    form_class = ResetPasswordForm
-    user = CustomUser
-    success_url = reverse_lazy('users:password_reset_done')
-
-    def form_valid(self, form):
-        user = form.save()
-        self.send_password_reset_email(user)
-        self.request.session['email'] = user.email
-        messages.success(self.request, 'Ссылка для сброса пароля отправлена на вашу электронную почту.')
-        return redirect(self.success_url)
-
-    def send_password_reset_email(self, user):
-        token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
-        domain = self.request.get_host()
-        reset_link = f'http://{domain}{reverse("users:password_reset_confirm", kwargs={"uidb64": uid, "token": token})}'
-
-        send_mail(
-            'Сброс пароля',
-            f'Перейдите по следующей ссылке, чтобы сбросить пароль: {reset_link}',
-            'daryaaloets@yandex.ru',
-            [user.email],
-            fail_silently=False,
-        )
-
-
-class PasswordResetDoneView(View):
-    template_name = 'users/password_reset_done.html'
-    form_class = ResetPasswordForm
-    user = CustomUser
-    success_url = reverse_lazy('users:password_reset_confirm')
-
-
-class PasswordResetConfirmView(View):
-    template_name = 'users/password_reset_confirm.html'
-    form_class = ResetPasswordForm
-    user = CustomUser
-    success_url = reverse_lazy('users:password_reset_complete')
-
-    def form_valid(self):
-        return redirect(self.success_url)
-
-
-class PasswordResetCompleteView(View):
-    template_name = 'users/password_reset_complete.html'
-    form_class = ResetPasswordForm
-    user = CustomUser
-    success_url = reverse_lazy('users:login')
 
