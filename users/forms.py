@@ -125,6 +125,14 @@ class UserProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(UserProfileForm, self).__init__(*args, **kwargs)
 
+        self.fields['avatar'].widget.attrs.update(
+            {
+                'class': 'form-control',
+                'type': 'image',
+                'placeholder': 'Добавьте аватар'
+            }
+        )
+
         self.fields['email'].widget.attrs.update(
             {
                 'class': 'form-control',

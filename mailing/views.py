@@ -14,6 +14,7 @@ from pip._internal.models.link import Link
 from config.settings import EMAIL_HOST_USER
 from mailing.forms import CampaignForm
 from mailing.models import Message, Subscriber, Campaign, EmailAttempt
+from users.models import CustomUser
 
 
 class MessageListView(LoginRequiredMixin, ListView):
@@ -110,7 +111,9 @@ class SubscriberDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
+        subscriber = self.get_object()
         context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+        context['is_owner'] = self.request.user == subscriber.owner
         return context
 
 
@@ -185,18 +188,20 @@ class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
         campaigns = self.get_user_campaigns()
         subscribers = self.get_user_subscribers()
         active_campaigns = campaigns.filter(status='Запущена').count()
-        unique_recipients = self.get_user_subscribers
+
         if not self.request.user.groups.filter(name='Менеджер').exists():
             unique_recipients = subscribers.filter(owner=self.request.user).count()
         else:
             unique_recipients = subscribers.all().count()
+
 
         context = {
             'campaignes': campaigns,
             'total_campaigns': campaigns.count(),
             'active_campaigns': active_campaigns,
             'unique_recipients_count': unique_recipients,
-            'is_manager': self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+            'is_manager': self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists(),
+            'users_count': CustomUser.objects.all().count()
         }
 
         return render(request, self.template_name, context)
@@ -225,9 +230,13 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         current_campaign = self.get_object()
+        campaign = self.get_object()
+        user_owner = campaign.owner
         context['subscribers'] = current_campaign.subscribers.all()
         context['campaignes'] = Campaign.objects.all()
         context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+        context['is_owner'] = self.request.user == user_owner,
+        context['user_owner'] = user_owner
         return context
 
     def test_func(self):
@@ -352,6 +361,58 @@ class EmailAttemptListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return True
 
 
+class EmailAttemptSuccessfulListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = EmailAttempt
+    template_name = 'mailing/emailattempt_list_successful.html'
+    context_object_name = 'emailattempts'
+
+    def get_queryset(self):
+        if self.request.user.groups.filter(name='Менеджер').exists():
+            return EmailAttempt.objects.filter(status='successful')
+        else:
+            return EmailAttempt.objects.filter(owner=self.request.user, status='successful')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        emailattempts = self.get_queryset()
+
+        count_successful = emailattempts.all().count()
+
+        context['emailattempts'] = emailattempts
+        context['count_successful'] = count_successful
+
+        return context
+
+    def test_func(self):
+        return True
+
+
+class EmailAttemptFailedListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = EmailAttempt
+    template_name = 'mailing/emailattempt_list_failed.html'
+    context_object_name = 'emailattempts'
+
+    def get_queryset(self):
+        if self.request.user.groups.filter(name='Менеджер').exists():
+            return EmailAttempt.objects.filter(status='failed')
+        else:
+            return EmailAttempt.objects.filter(owner=self.request.user, status='failed')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        emailattempts = self.get_queryset()
+
+        count_failed = emailattempts.all().count()
+
+        context['emailattempts'] = emailattempts
+        context['count_failed'] = count_failed
+
+        return context
+
+    def test_func(self):
+        return True
+
+
 class EmailAttemptDeleteView(LoginRequiredMixin, UserPassesTestMixin,  DeleteView):
     model = EmailAttempt
     template_name = 'mailing/emailattempt_confirm_delete.html'
@@ -376,7 +437,7 @@ class EmailAttemptDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         return True
 
 
-class ContactsTemplateView(TemplateView):
+class ContactsTemplateView(LoginRequiredMixin, TemplateView):
     template_name = 'mailing/contacts.html'
 
     def post(self, request, *args, **kwargs):

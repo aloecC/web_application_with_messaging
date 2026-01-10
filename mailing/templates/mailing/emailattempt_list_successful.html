@@ -11,7 +11,11 @@
             </div>
             {% if emailattempts %}
             <div class="col-12 mt-1">
-                <h5 class="mb-4 text-center mt-1"> <a href="{% url 'mailing:emailattempt_list_successful' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Успешных:</a> {{ count_successful }}  | <a href="{% url 'mailing:emailattempt_list_failed' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Неудачных:</a> {{ count_failed }} | <a href="{% url 'mailing:emailattempt_list' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Всего:</a> {{ count_all }}</h5>
+                {% if count_successful %}
+                    <h5 class="mb-4 text-center mt-1">Всего: {{ count_successful }}</h5>
+                {% else %}
+                    <h5 class="mb-4 text-center mt-1">Нет успешных попыток.</h5>
+                {% endif %}
             </div>
             <div class="row">
                 <div class="col-12">
