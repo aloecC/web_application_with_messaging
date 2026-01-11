@@ -1,11 +1,6 @@
 {% extends 'mailing/base.html' %}
 {% block title %} Регистрация{% endblock %}
 {% block content %}
-{% if messages %}
-    {% for message in messages %}
-        <p style="color: green;">{{ message }}</p>
-    {% endfor %}
-{% endif %}
     <div class="container mt-5">
         <h3 class="mb-3"> Регистрация</h3>
         <form method="post">

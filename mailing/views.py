@@ -11,7 +11,7 @@ from django.views.generic import ListView, DetailView, TemplateView
 from django.urls import reverse_lazy, reverse
 from pip._internal.models.link import Link
 
-from config.settings import EMAIL_HOST_USER
+from config.settings import EMAIL_HOST_USER, DEFAULT_FROM_EMAIL
 from mailing.forms import CampaignForm
 from mailing.models import Message, Subscriber, Campaign, EmailAttempt
 from users.models import CustomUser
@@ -165,10 +165,19 @@ class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         else:
             return Campaign.objects.filter(owner=self.request.user)
 
+    def get_active_status(self):
+        campaignes = self.get_queryset()
+        active_status = True
+        for campaign in campaignes:
+            active_status = campaign.status_active
+
+        return active_status
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['count'] = self.get_count()
         context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+        context['is_status_active'] = self.get_active_status()
         return context
 
     def get_count(self):
@@ -223,6 +232,7 @@ class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 
 class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    """Подробная информация о рассылке"""
     model = Campaign
     template_name = 'mailing/campaign_detail.html'
     context_object_name = 'campaign'
@@ -247,19 +257,34 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
 
 class CampaignCreateView(LoginRequiredMixin, CreateView):
-    model = Campaign
+    """Создание новой рассылки"""
     form_class = CampaignForm
     template_name = 'mailing/campaign_form.html'
     success_url = reverse_lazy('mailing:campaign_list')
+
+    def get(self, request, *args, **kwargs):
+        form = self.get_form()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        # Логика для создания новой рассылки
+        form = self.get_form()
+        if form.is_valid():
+            status_active = Campaign.objects.filter(status_active=True).exists()  # Проверяем, есть ли активные рассылки
+            new_campaign = form.save(commit=False)  # Создаем объект, но не сохраняем его еще
+            new_campaign.status_active = status_active  # Устанавливаем статус
+            new_campaign.owner = request.user  # Устанавливаем владельца
+            new_campaign.save()  # Сохраняем объект в базе данных
+
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
-
-    def form_valid(self, form):
-        form.instance.owner = self.request.user
-        return super().form_valid(form)
 
 
 class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -439,14 +464,45 @@ class EmailAttemptDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView
 
 class ContactsTemplateView(LoginRequiredMixin, TemplateView):
     template_name = 'mailing/contacts.html'
+    success_url = reverse_lazy('mailing:contacts')
 
     def post(self, request, *args, **kwargs):
         name = request.POST.get('name')
         message = request.POST.get('message')
+        email = request.POST.get('email')
 
-        return HttpResponse(f'Спасибо, {name}, Сообщение отправлено')
+
+        subject = 'Поддержка'
+        message = f'Сообщение:"{message}". Электронная почта для связи: {email}({name}).'
+        from_email = DEFAULT_FROM_EMAIL
+        recipient_list = [DEFAULT_FROM_EMAIL,]
+        send_mail(subject, message, from_email, recipient_list)
+
+        return redirect(self.success_url)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+
+class CampaignBreakAllView(View):
+    """Отключение рассылок"""
+    def post(self, request):
+        campaigns = Campaign.objects.all()
+        for campaign in campaigns:
+            campaign.status_active = False
+            campaign.save()
+
+        return redirect('mailing:campaign_list')
+
+
+class CampaignStartAllView(View):
+    """Включение рассылок"""
+    def post(self, request):
+        campaigns = Campaign.objects.all()
+        for campaign in campaigns:
+            campaign.status_active = True
+            campaign.save()
+
+        return redirect('mailing:campaign_list')
 

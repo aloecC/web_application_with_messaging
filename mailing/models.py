@@ -55,6 +55,12 @@ class Campaign(models.Model):
     status_active = models.BooleanField(verbose_name='Возможность рассылки', default=True)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='campaign_owner', default=1)
 
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            self.status_active = Campaign.objects.filter(status_active=True).exists()
+
+        super().save(*args, **kwargs)
+
     def clean(self):
 
         if not self.start_time and not isinstance(self.start_time, datetime):
@@ -66,23 +72,26 @@ class Campaign(models.Model):
         if self.start_time >= self.end_time:
             raise ValidationError('Время начала должно быть меньше времени окончания.')
 
-
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
 
     def update_status(self):
         now = timezone.now()
-        if now < self.start_time:
-            new_status = 'Создана'
-        elif self.start_time <= now <= self.end_time:
-            new_status = 'Запущена'
-        else:
-            new_status = 'Завершена'
+        if self.status_active is True:
+            if now < self.start_time:
+                new_status = 'Создана'
+            elif self.start_time <= now <= self.end_time:
+                new_status = 'Запущена'
+            else:
+                new_status = 'Завершена'
 
-        if self.status != new_status:
-            self.status = new_status
-            self.save(update_fields=['status'])
+            if self.status != new_status:
+                self.status = new_status
+                self.save(update_fields=['status'])
+        else:
+            raise ValidationError('Невозможно запустить рассылку')
+
 
     def __str__(self):
         return f'Рассылка с {self.start_time} до {self.end_time} - Статус: {self.status}'

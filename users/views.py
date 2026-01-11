@@ -5,7 +5,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.http import request
@@ -17,11 +17,11 @@ from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, FormView, UpdateView
 from django.core.mail import send_mail
 
-from config.settings import DEFAULT_FROM_EMAIL
+from config.settings import DEFAULT_FROM_EMAIL, EMAIL_HOST_USER
 from mailing.models import Campaign, Subscriber
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm, VerificationCodeForm, \
     ResetPasswordForm
-from .models import CustomUser
+from .models import CustomUser, TemporaryUser
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
@@ -34,14 +34,23 @@ class RegisterView(FormView):
     form_class = CustomUserCreationForm
     success_url = reverse_lazy('users:verify')
 
+
     def form_valid(self, form):
-        user = form.save()
+        user = form.save(commit=False)  # Не сохраняем пользователя сразу
+        user.save()  # Сохраняем пользователя, чтобы получить его ID
+
         verification_code = self.send_verification_email(user.email)
-        user.verification_code = verification_code
-        user.save()
+
+        # Создаем временного пользователя
+        temporary_user = TemporaryUser.objects.create(
+            user=user,
+            verification_code=verification_code
+        )
+
         self.request.session['email'] = user.email
         messages.success(self.request, 'Код подтверждения отправлен на вашу электронную почту.')
         return redirect(self.success_url)
+
 
     def send_verification_email(self, user_email):
         verification_code = str(random.randint(100000, 999999))  # Генерация 6-значного кода
@@ -67,18 +76,29 @@ class VerifyView(FormView):
         if form.is_valid():
             code_entered = form.cleaned_data['verification_code']
             try:
-                user = CustomUser.objects.get(
-                    email=request.session['email'])
-                if code_entered == user.verification_code:
+                temporary_user = TemporaryUser.objects.get(
+                    user__email=request.session['email']
+                )
+
+                if temporary_user.is_expired():
+                    messages.error(request, "Срок действия кода подтверждения истек.")
+                    return self.form_invalid(form)
+
+                if code_entered == temporary_user.verification_code:
+                    user = temporary_user.user
                     user.email_confirmed = True
                     user.save()
                     messages.success(request, 'Регистрация завершена успешно!')
 
                     self.send_welcome_email(user.email)
+
+                    # Удаляем временного пользователя после успешной верификации
+                    temporary_user.delete()
+
                     return redirect('mailing:campaign_list')
                 else:
                     messages.error(request, "Неверный код подтверждения.")
-            except CustomUser.DoesNotExist:
+            except TemporaryUser.DoesNotExist:
                 messages.error(request, "Пользователь не найден.")
 
         return self.form_invalid(form)
@@ -92,7 +112,6 @@ class VerifyView(FormView):
         context = super().get_context_data(**kwargs)
         context['error_message'] = messages.get_messages(self.request)
         return context
-
 
     def send_welcome_email(self, user_email):
         subject = 'Добро пожаловать в наш сервис!'
@@ -113,11 +132,15 @@ class LoginView(View):
 
         # Логика аутентификации пользователя
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
-            login(request, user)
-            print(f"Отправка письма на: {user.email}")
-            self.send_login_email(user.email)
-            return redirect('home')
+            if user.is_block:  # Проверяем, заблокирован ли пользователь
+                return render(request, 'login.html', {'error': 'Данный пользователь заблокирован'})
+            else:
+                login(request, user)
+                print(f"Отправка письма на: {user.email}")
+                self.send_login_email(user.email)
+                return redirect('home')
         else:
             # Обработка ошибки аутентификации
             return render(request, 'login.html', {'error': 'Неверные учетные данные'})
@@ -133,12 +156,20 @@ class LoginView(View):
 class UserDetailView(View):
     def get(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
+        is_block = ''
+        if user.is_block == True:
+            is_block = 'Заблокирован'
+        else:
+            is_block = 'Не заблокирован'
+
         context = {
             'user': user,
-            'is_manager': self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists(),
+            'is_manager': self.request.user.groups.filter(name='Менеджер').exists(),
             'subscribers_count': Subscriber.objects.filter(owner=user).count(),
             'campaign_count': Campaign.objects.filter(owner=user).count(),
-            'is_owner_profile': user.pk == self.request.user.pk
+            'is_owner_profile': user.pk == self.request.user.pk,
+            'is_block': is_block,
+
         }
         return render(request, 'users/user_detail.html', context)
 
@@ -171,3 +202,46 @@ class UserProfileEditView(LoginRequiredMixin, View):
         return render(request, 'users/edit_profile.html', {'form': form})
 
 
+class UserBlockView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Блокировка пользователя"""
+    def post(self, request, username):
+        user = get_object_or_404(CustomUser, username=username)
+
+        user.is_block = True
+        user.save()
+
+        send_mail(
+                subject='Блокировка',
+                message=f'{user.username}, спешу сообщить, что вы были заблокированы. ',
+                from_email=f'{EMAIL_HOST_USER}',
+                recipient_list=[user.email],
+                )
+
+        return redirect('users:user_detail', username=username)
+
+    def test_func(self):
+        if self.request.user.groups.filter(name='Менеджер').exists():
+            return True
+
+
+class UserEndBlockView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Снятие блокировки c пользователя"""
+
+    def post(self, request, username):
+        user = get_object_or_404(CustomUser, username=username)
+
+        user.is_block = False
+        user.save()
+
+        send_mail(
+            subject='Снятие блокировки',
+            message=f'{user.username}, спешу сообщить, что вы снова можете пользоваться нашем сервисом.',
+            from_email=f'{EMAIL_HOST_USER}',
+            recipient_list=[user.email],
+        )
+
+        return redirect('users:user_detail', username=username)
+
+    def test_func(self):
+        if self.request.user.groups.filter(name='Менеджер').exists():
+            return True
