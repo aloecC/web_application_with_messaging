@@ -11,6 +11,7 @@ class CustomUser(AbstractUser):
     email_confirmed = models.BooleanField(default=False)
 
     verification_code = models.CharField(max_length=6, blank=True, null=True)
+    is_block = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username',]
