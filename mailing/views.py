@@ -11,7 +11,7 @@ from django.views.generic import ListView, DetailView, TemplateView
 from django.urls import reverse_lazy, reverse
 from pip._internal.models.link import Link
 
-from config.settings import EMAIL_HOST_USER
+from config.settings import EMAIL_HOST_USER, DEFAULT_FROM_EMAIL
 from mailing.forms import CampaignForm
 from mailing.models import Message, Subscriber, Campaign, EmailAttempt
 from users.models import CustomUser
@@ -439,12 +439,21 @@ class EmailAttemptDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView
 
 class ContactsTemplateView(LoginRequiredMixin, TemplateView):
     template_name = 'mailing/contacts.html'
+    success_url = reverse_lazy('mailing:contacts')
 
     def post(self, request, *args, **kwargs):
         name = request.POST.get('name')
         message = request.POST.get('message')
+        email = request.POST.get('email')
 
-        return HttpResponse(f'Спасибо, {name}, Сообщение отправлено')
+
+        subject = 'Поддержка'
+        message = f'Сообщение:"{message}". Электронная почта для связи: {email}({name}).'
+        from_email = DEFAULT_FROM_EMAIL
+        recipient_list = [DEFAULT_FROM_EMAIL,]
+        send_mail(subject, message, from_email, recipient_list)
+
+        return redirect(self.success_url)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
