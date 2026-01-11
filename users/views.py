@@ -1,6 +1,7 @@
 import random
 
 from django.contrib.auth.tokens import default_token_generator
+from django.utils.decorators import method_decorator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
@@ -13,6 +14,7 @@ from django.http import request
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy
 from django.views import View
+from django.views.decorators.cache import cache_page
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, FormView, UpdateView
 from django.core.mail import send_mail
@@ -34,7 +36,6 @@ class RegisterView(FormView):
     form_class = CustomUserCreationForm
     success_url = reverse_lazy('users:verify')
 
-
     def form_valid(self, form):
         user = form.save(commit=False)  # Не сохраняем пользователя сразу
         user.save()  # Сохраняем пользователя, чтобы получить его ID
@@ -50,7 +51,6 @@ class RegisterView(FormView):
         self.request.session['email'] = user.email
         messages.success(self.request, 'Код подтверждения отправлен на вашу электронную почту.')
         return redirect(self.success_url)
-
 
     def send_verification_email(self, user_email):
         verification_code = str(random.randint(100000, 999999))  # Генерация 6-значного кода
@@ -153,6 +153,7 @@ class LoginView(View):
         send_mail(subject, message, from_email, recipient_list)
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class UserDetailView(View):
     def get(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
@@ -174,6 +175,7 @@ class UserDetailView(View):
         return render(request, 'users/user_detail.html', context)
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class UsersListView(View):
     def get(self, request):
         users = CustomUser.objects.all()

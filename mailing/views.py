@@ -2,14 +2,16 @@ from datetime import timezone
 import tkinter as tk
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.cache import cache_page
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic import ListView, DetailView, TemplateView
 from django.urls import reverse_lazy, reverse
-from pip._internal.models.link import Link
 
 from config.settings import EMAIL_HOST_USER, DEFAULT_FROM_EMAIL
 from mailing.forms import CampaignForm
@@ -17,7 +19,9 @@ from mailing.models import Message, Subscriber, Campaign, EmailAttempt
 from users.models import CustomUser
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class MessageListView(LoginRequiredMixin, ListView):
+    """Отображение списка сообщений"""
     model = Message
     template_name = 'mailing/messages_list.html'
     context_object_name = 'messages'
@@ -35,7 +39,9 @@ class MessageListView(LoginRequiredMixin, ListView):
         return count
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class MessageDetailView(LoginRequiredMixin, DetailView):
+    """Подробная информация о сообщении"""
     model = Message
     template_name = 'mailing/message_detail.html'
     context_object_name = 'message'
@@ -51,6 +57,7 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
 
 
 class MessageCreateView(LoginRequiredMixin, CreateView):
+    """Создание сообщения"""
     model = Message
     template_name = 'mailing/message_form.html'
     fields = ['subject', 'body']
@@ -58,6 +65,7 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
 
 
 class MessageUpdateView(LoginRequiredMixin, UpdateView):
+    """Обновление сообщения"""
     model = Message
     fields = ['subject', 'body']
     template_name = 'mailing/message_form.html'
@@ -65,22 +73,28 @@ class MessageUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class MessageDeleteView(LoginRequiredMixin, DeleteView):
+    """Удаление сообщения"""
     model = Message
     template_name = 'mailing/message_confirm_delete.html'
     success_url = reverse_lazy('mailing:message_list')
 
 
 class SubscriberListView(LoginRequiredMixin, ListView):
+    """Отображение списка получателей"""
     model = Subscriber
     template_name = 'mailing/subscriber_list.html'
 
     context_object_name = 'subscribers'
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
-            return Subscriber.objects.all()
-        else:
-            return Subscriber.objects.filter(owner=self.request.user)
+        queryset = cache.get('my_subscriber_list')
+        if not queryset:
+            if self.request.user.groups.filter(name='Менеджер').exists():
+                queryset = Subscriber.objects.all()
+            else:
+                queryset = Subscriber.objects.filter(owner=self.request.user)
+            cache.set('my_subscriber_list', queryset, 60 * 15)
+        return queryset
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -98,7 +112,9 @@ class SubscriberListView(LoginRequiredMixin, ListView):
         return True
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class SubscriberDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    """Подробная информация о получатели"""
     model = Subscriber
     template_name = 'mailing/subscriber_detail.html'
     context_object_name = 'subscriber'
@@ -118,6 +134,7 @@ class SubscriberDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
 
 class SubscriberCreateView(LoginRequiredMixin, CreateView):
+    """Создание получателя"""
     model = Subscriber
     template_name = 'mailing/subscriber_form.html'
     fields = ['email', 'full_name', 'comment']
@@ -129,6 +146,7 @@ class SubscriberCreateView(LoginRequiredMixin, CreateView):
 
 
 class SubscriberUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Обновление получателя"""
     model = Subscriber
     fields = ['email', 'full_name', 'comment']
     template_name = 'mailing/subscriber_form.html'
@@ -145,6 +163,7 @@ class SubscriberUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 
 class SubscriberDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """Удаление получателя"""
     model = Subscriber
     template_name = 'mailing/subscriber_confirm_delete.html'
     success_url = reverse_lazy('mailing:subscriber_list')
@@ -155,17 +174,23 @@ class SubscriberDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Отображение списка рассылок"""
     model = Campaign
     template_name = 'mailing/campaign_list.html'
     context_object_name = 'campaignes'
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
-            return Campaign.objects.all()
-        else:
-            return Campaign.objects.filter(owner=self.request.user)
+        queryset = cache.get('my_campaign_list')
+        if not queryset:
+            if self.request.user.groups.filter(name='Менеджер').exists():
+                queryset = Campaign.objects.all()
+            else:
+                queryset = Campaign.objects.filter(owner=self.request.user)
+            cache.set('my_campaign_list', queryset, 60 * 15)
+        return queryset
 
     def get_active_status(self):
+        """Получение статуса возможности запуска рассылки"""
         campaignes = self.get_queryset()
         active_status = True
         for campaign in campaignes:
@@ -181,6 +206,7 @@ class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return context
 
     def get_count(self):
+        """Получение количества рассылок"""
         campaignes = self.get_queryset()
         return campaignes.count()
 
@@ -188,7 +214,9 @@ class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return True
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Отображение главной страницы"""
     model = Campaign
     template_name = 'mailing/home.html'
     context_object_name = 'campaignes'
@@ -216,12 +244,14 @@ class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
         return render(request, self.template_name, context)
 
     def get_user_campaigns(self):
+        """Получение рассылок пользователя"""
         if self.request.user.groups.filter(name='Менеджер').exists():
             return Campaign.objects.all()
         else:
             return Campaign.objects.filter(owner=self.request.user)
 
     def get_user_subscribers(self):
+        """Получение получателей пользователя"""
         if self.request.user.groups.filter(name='Менеджер').exists():
             return Subscriber.objects.all()
         else:
@@ -231,6 +261,7 @@ class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
         return True
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     """Подробная информация о рассылке"""
     model = Campaign
@@ -271,15 +302,14 @@ class CampaignCreateView(LoginRequiredMixin, CreateView):
         form = self.get_form()
         if form.is_valid():
             status_active = Campaign.objects.filter(status_active=True).exists()  # Проверяем, есть ли активные рассылки
-            new_campaign = form.save(commit=False)  # Создаем объект, но не сохраняем его еще
-            new_campaign.status_active = status_active  # Устанавливаем статус
-            new_campaign.owner = request.user  # Устанавливаем владельца
-            new_campaign.save()  # Сохраняем объект в базе данных
+            new_campaign = form.save(commit=False)
+            new_campaign.status_active = status_active
+            new_campaign.owner = request.user
+            new_campaign.save()
 
             return self.form_valid(form)
         else:
             return self.form_invalid(form)
-
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -288,6 +318,7 @@ class CampaignCreateView(LoginRequiredMixin, CreateView):
 
 
 class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Обновление рассылки"""
     model = Campaign
     form_class = CampaignForm
     template_name = 'mailing/campaign_form.html'
@@ -299,6 +330,7 @@ class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 
 class CampaignDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """Удаление рассылки"""
     model = Campaign
     template_name = 'mailing/campaign_confirm_delete.html'
     success_url = reverse_lazy('mailing:campaign_list')
@@ -311,6 +343,7 @@ class CampaignDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 class StartEmailAttemptView(LoginRequiredMixin, View):
+    """Запуск(создание обьектов 'Попытка рассылки') рассылки"""
     def post(self, request, pk):
         campaign = get_object_or_404(Campaign, pk=pk)
         subscribers = campaign.subscribers.all()
@@ -349,6 +382,7 @@ class StartEmailAttemptView(LoginRequiredMixin, View):
 
 
 class StopEmailAttemptView(View):
+    """Прерывание запуска(создание обьектов 'Попытка рассылки') рассылки"""
     def post(self, request, pk):
         campaign = get_object_or_404(Campaign, pk=pk)
         campaign.status = 'Завершена'
@@ -357,7 +391,9 @@ class StopEmailAttemptView(View):
         return redirect('mailing:campaign_detail', pk=pk)
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class EmailAttemptListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Отображение отчетов по рассылкам"""
     model = EmailAttempt
     template_name = 'mailing/emailattempt_list.html'
     context_object_name = 'emailattempts'
@@ -386,7 +422,9 @@ class EmailAttemptListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return True
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class EmailAttemptSuccessfulListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Отображение списка успешных попыток рассылки"""
     model = EmailAttempt
     template_name = 'mailing/emailattempt_list_successful.html'
     context_object_name = 'emailattempts'
@@ -412,7 +450,9 @@ class EmailAttemptSuccessfulListView(LoginRequiredMixin, UserPassesTestMixin, Li
         return True
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class EmailAttemptFailedListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Отображение списка не успешных попыток рассылки"""
     model = EmailAttempt
     template_name = 'mailing/emailattempt_list_failed.html'
     context_object_name = 'emailattempts'
@@ -450,7 +490,9 @@ class EmailAttemptDeleteView(LoginRequiredMixin, UserPassesTestMixin,  DeleteVie
         return True
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class EmailAttemptDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    """Подробная информация об отчете"""
     model = EmailAttempt
     template_name = 'mailing/emailattempt_detail.html'
     context_object_name = 'emailattempt'
@@ -462,6 +504,7 @@ class EmailAttemptDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         return True
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class ContactsTemplateView(LoginRequiredMixin, TemplateView):
     template_name = 'mailing/contacts.html'
     success_url = reverse_lazy('mailing:contacts')
