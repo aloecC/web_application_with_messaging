@@ -28,35 +28,38 @@
                         Количество клиентов: <p class="p-3 bg-white mt-1 text-center">{{ subscribers_count }}</p>
                         Количество рассылок: <p class="p-3 bg-white mt-1 text-center">{{ campaign_count }}</p>
                         Статус: <p class="p-3 bg-white mt-1 text-center">{{ is_block }}</p>
+                    {% endif %}
                     <div class="row">
                         <div class="col-6 text-start">
-                        {% if is_manager %}
-                        <a href="{% url 'users:user_list' %}" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/1322/1322236.png" style="width: auto; height: 40px;" title="К списку пользователей"></a>
-                        {% else %}
-                        <a href="#" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/2728/2728745.png" style="width: auto; height: 40px;" title="Назад"></a>
-                        {% endif %}
-                        {% if is_owner_profile %}
-                        <a href="{% url 'users:edit_profile' user.username %}" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/8203/8203722.png" style="width: auto; height: 40px;" title="Редактировать"></a>
-                        <a href="#" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/5074/5074264.png" style="width: auto; height: 40px;" title="Удалить"></a>
-                        {% endif %}
+                            {% if is_manager %}
+                            <a href="{% url 'users:user_list' %}" class="mx-1"><img src="https://img.icons8.com/?size=160&id=49217&format=png" style="width: auto; height: 50px;" title="К списку пользователей"></a>
+                            {% else %}
+                            <a href="#" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/2728/2728745.png" style="width: auto; height: 40px;" title="Назад"></a>
+                            {% endif %}
+                            {% if is_owner_profile %}
+                                <a href="{% url 'users:edit_profile' user.username %}" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/8203/8203722.png" style="width: auto; height: 40px;" title="Редактировать"></a>
+                                <a href="{% url 'users:delete_profile' user.username %}" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/5074/5074264.png" style="width: auto; height: 40px;" title="Удалить"></a>
+                                <a href="#" class="mx-1"><img src="https://img.icons8.com/?size=160&id=114069&format=png" style="width: auto; height: 38px;" title="Сменить пароль"></a>
+                            {% endif %}
                         </div>
                         <div class="col-6 text-end">
+                            {% if is_manager %}
                             {% if not user.is_block %}
-                            <form method="post" action="{% url 'users:user_block' user.username %}" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit" style="border: none; background: none; padding: 0; cursor: pointer;" class="image-button">
-                                    <img src="https://img.icons8.com/?size=128&id=S2dQjgxYT0f4&format=png" style="width: auto; height: 50px;" title="Блокировать">
-                                </button>
-                            </form>
+                                <form method="post" action="{% url 'users:user_block' user.username %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" style="border: none; background: none; padding: 0; cursor: pointer;" class="image-button">
+                                        <img src="https://img.icons8.com/?size=128&id=S2dQjgxYT0f4&format=png" style="width: auto; height: 50px;" title="Блокировать">
+                                    </button>
+                                </form>
                             {% else %}
-                            <form method="post" action="{% url 'users:user_end_block' user.username %}" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit" style="border: none; background: none; padding: 0; cursor: pointer;" class="image-button">
-                                    <img src="https://img.icons8.com/?size=128&id=dthFgnvD5zrE&format=png" style="width: auto; height: 50px;" title="Разблокировать">
-                                </button>
-                            </form>
+                                <form method="post" action="{% url 'users:user_end_block' user.username %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" style="border: none; background: none; padding: 0; cursor: pointer;" class="image-button">
+                                        <img src="https://img.icons8.com/?size=128&id=dthFgnvD5zrE&format=png" style="width: auto; height: 50px;" title="Разблокировать">
+                                    </button>
+                                </form>
                             {% endif %}
-                    {% endif %}
+                            {% endif %}
                         </div>
 
                     </div>

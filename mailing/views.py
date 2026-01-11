@@ -32,11 +32,18 @@ class MessageListView(LoginRequiredMixin, ListView):
         return context
 
     def get_count(self):
-        messages = Message.objects.all()
+        messages = self.get_queryset()
         count = 0
         for message in messages:
             count += 1
         return count
+
+    def get_queryset(self):
+        queryset = cache.get('my_message_list')
+        if not queryset:
+            queryset = Message.objects.all()
+            cache.set('my_message_list', queryset, 60 * 15)
+        return queryset
 
 
 @method_decorator(cache_page(60 * 15), name='dispatch')
@@ -180,13 +187,10 @@ class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     context_object_name = 'campaignes'
 
     def get_queryset(self):
-        queryset = cache.get('my_campaign_list')
-        if not queryset:
-            if self.request.user.groups.filter(name='Менеджер').exists():
-                queryset = Campaign.objects.all()
-            else:
-                queryset = Campaign.objects.filter(owner=self.request.user)
-            cache.set('my_campaign_list', queryset, 60 * 15)
+        if self.request.user.groups.filter(name='Менеджер').exists():
+            queryset = Campaign.objects.all()
+        else:
+            queryset = Campaign.objects.filter(owner=self.request.user)
         return queryset
 
     def get_active_status(self):
@@ -261,7 +265,6 @@ class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
         return True
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
 class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     """Подробная информация о рассылке"""
     model = Campaign
@@ -391,7 +394,6 @@ class StopEmailAttemptView(View):
         return redirect('mailing:campaign_detail', pk=pk)
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
 class EmailAttemptListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Отображение отчетов по рассылкам"""
     model = EmailAttempt
@@ -399,10 +401,14 @@ class EmailAttemptListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     context_object_name = 'emailattempts'
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
-            return EmailAttempt.objects.all()
-        else:
-            return EmailAttempt.objects.filter(owner=self.request.user)
+        queryset = cache.get('my_email_attempt_list')
+        if not queryset:
+            if self.request.user.groups.filter(name='Менеджер').exists():
+                queryset = EmailAttempt.objects.all()
+            else:
+                queryset = EmailAttempt.objects.filter(owner=self.request.user)
+        cache.set('my_email_attempt_list', queryset, 60 * 15)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -422,7 +428,6 @@ class EmailAttemptListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return True
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
 class EmailAttemptSuccessfulListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Отображение списка успешных попыток рассылки"""
     model = EmailAttempt
@@ -430,10 +435,14 @@ class EmailAttemptSuccessfulListView(LoginRequiredMixin, UserPassesTestMixin, Li
     context_object_name = 'emailattempts'
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
-            return EmailAttempt.objects.filter(status='successful')
-        else:
-            return EmailAttempt.objects.filter(owner=self.request.user, status='successful')
+        queryset = cache.get('my_email_attempt_successful_list')
+        if not queryset:
+            if self.request.user.groups.filter(name='Менеджер').exists():
+                queryset = EmailAttempt.objects.filter(status='successful')
+            else:
+                queryset = EmailAttempt.objects.filter(owner=self.request.user, status='successful')
+        cache.set('my_email_attempt_successful_list', queryset, 60 * 15)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -450,7 +459,6 @@ class EmailAttemptSuccessfulListView(LoginRequiredMixin, UserPassesTestMixin, Li
         return True
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
 class EmailAttemptFailedListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Отображение списка не успешных попыток рассылки"""
     model = EmailAttempt
@@ -458,10 +466,14 @@ class EmailAttemptFailedListView(LoginRequiredMixin, UserPassesTestMixin, ListVi
     context_object_name = 'emailattempts'
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
-            return EmailAttempt.objects.filter(status='failed')
-        else:
-            return EmailAttempt.objects.filter(owner=self.request.user, status='failed')
+        queryset = cache.get('my_email_attempt_failed_list')
+        if not queryset:
+            if self.request.user.groups.filter(name='Менеджер').exists():
+                queryset = EmailAttempt.objects.filter(status='failed')
+            else:
+                queryset = EmailAttempt.objects.filter(owner=self.request.user, status='failed')
+        cache.set('my_email_attempt_failed_list', queryset, 60 * 15)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -534,8 +546,9 @@ class CampaignBreakAllView(View):
         campaigns = Campaign.objects.all()
         for campaign in campaigns:
             campaign.status_active = False
+            print('Статус изменен')
             campaign.save()
-
+        print('Рассылка выключена')
         return redirect('mailing:campaign_list')
 
 
@@ -545,7 +558,8 @@ class CampaignStartAllView(View):
         campaigns = Campaign.objects.all()
         for campaign in campaigns:
             campaign.status_active = True
+            print('Статус изменен')
             campaign.save()
-
+        print('Рассылка включена')
         return redirect('mailing:campaign_list')
 

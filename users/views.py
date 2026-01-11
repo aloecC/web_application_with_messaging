@@ -153,7 +153,7 @@ class LoginView(View):
         send_mail(subject, message, from_email, recipient_list)
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
+#@method_decorator(cache_page(60 * 15), name='dispatch')
 class UserDetailView(View):
     def get(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
@@ -175,7 +175,6 @@ class UserDetailView(View):
         return render(request, 'users/user_detail.html', context)
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
 class UsersListView(View):
     def get(self, request):
         users = CustomUser.objects.all()
@@ -188,6 +187,7 @@ class UsersListView(View):
         return render(request, 'users/users_list.html', context)
 
 
+@method_decorator(cache_page(60*15), name='dispatch')
 class UserProfileEditView(LoginRequiredMixin, View):
     def get(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
@@ -247,3 +247,19 @@ class UserEndBlockView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         if self.request.user.groups.filter(name='Менеджер').exists():
             return True
+
+
+class DeleteProfileView(LoginRequiredMixin, View):
+    """Представление для удаления профиля пользователя"""
+
+    def get(self, request,  username):
+        """Показать страницу подтверждения удаления"""
+        user = get_object_or_404(CustomUser, username=username)
+        return render(request, 'users/delete_profile.html', {'user': user})
+
+    def post(self, request, username):
+        """Удалить профиль пользователя"""
+        user = get_object_or_404(CustomUser, username=username)
+        user.delete()
+        messages.success(request, "Ваш профиль был успешно удален.")
+        return redirect('mailing:home')  # Перенаправление на главную страницу или другую страницу
