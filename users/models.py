@@ -1,3 +1,5 @@
+from datetime import timedelta
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -15,3 +17,12 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class TemporaryUser(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    verification_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timezone.timedelta(minutes=5)

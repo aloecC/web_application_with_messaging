@@ -21,7 +21,7 @@ from config.settings import DEFAULT_FROM_EMAIL
 from mailing.models import Campaign, Subscriber
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserProfileForm, VerificationCodeForm, \
     ResetPasswordForm
-from .models import CustomUser
+from .models import CustomUser, TemporaryUser
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
@@ -34,14 +34,23 @@ class RegisterView(FormView):
     form_class = CustomUserCreationForm
     success_url = reverse_lazy('users:verify')
 
+
     def form_valid(self, form):
-        user = form.save()
+        user = form.save(commit=False)  # Не сохраняем пользователя сразу
+        user.save()  # Сохраняем пользователя, чтобы получить его ID
+
         verification_code = self.send_verification_email(user.email)
-        user.verification_code = verification_code
-        user.save()
+
+        # Создаем временного пользователя
+        temporary_user = TemporaryUser.objects.create(
+            user=user,
+            verification_code=verification_code
+        )
+
         self.request.session['email'] = user.email
         messages.success(self.request, 'Код подтверждения отправлен на вашу электронную почту.')
         return redirect(self.success_url)
+
 
     def send_verification_email(self, user_email):
         verification_code = str(random.randint(100000, 999999))  # Генерация 6-значного кода
@@ -67,18 +76,29 @@ class VerifyView(FormView):
         if form.is_valid():
             code_entered = form.cleaned_data['verification_code']
             try:
-                user = CustomUser.objects.get(
-                    email=request.session['email'])
-                if code_entered == user.verification_code:
+                temporary_user = TemporaryUser.objects.get(
+                    user__email=request.session['email']
+                )
+
+                if temporary_user.is_expired():
+                    messages.error(request, "Срок действия кода подтверждения истек.")
+                    return self.form_invalid(form)
+
+                if code_entered == temporary_user.verification_code:
+                    user = temporary_user.user
                     user.email_confirmed = True
                     user.save()
                     messages.success(request, 'Регистрация завершена успешно!')
 
                     self.send_welcome_email(user.email)
+
+                    # Удаляем временного пользователя после успешной верификации
+                    temporary_user.delete()
+
                     return redirect('mailing:campaign_list')
                 else:
                     messages.error(request, "Неверный код подтверждения.")
-            except CustomUser.DoesNotExist:
+            except TemporaryUser.DoesNotExist:
                 messages.error(request, "Пользователь не найден.")
 
         return self.form_invalid(form)
@@ -92,7 +112,6 @@ class VerifyView(FormView):
         context = super().get_context_data(**kwargs)
         context['error_message'] = messages.get_messages(self.request)
         return context
-
 
     def send_welcome_email(self, user_email):
         subject = 'Добро пожаловать в наш сервис!'

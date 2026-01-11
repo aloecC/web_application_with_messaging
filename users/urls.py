@@ -5,7 +5,7 @@ from .forms import CustomAuthenticationForm
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, \
     PasswordResetConfirmView, PasswordResetCompleteView
 
-from .views import RegisterView, UserDetailView, UserProfileEditView, VerifyView
+from .views import RegisterView, UserDetailView, UserProfileEditView, VerifyView, UsersListView
 
 #Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
 app_name = 'users'
@@ -17,6 +17,7 @@ urlpatterns = [
     path('verify/', VerifyView.as_view(), name='verify'),
     path('login/', LoginView.as_view(template_name='users/login.html', form_class=CustomAuthenticationForm), name='login'),
     path('logout/', LogoutView.as_view(next_page='mailing:campaign_list'), name='logout'),
+    path('users/', UsersListView.as_view(), name='user_list'),
     path('profile/<str:username>/', UserDetailView.as_view(), name='user_detail'),
     path('profile/edit/<str:username>/', UserProfileEditView.as_view(), name='edit_profile'),
 
