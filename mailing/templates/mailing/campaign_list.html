@@ -28,7 +28,12 @@
     {% if campaignes %}
         <div class="row  text-center">
             <div class="col-12 mt-1">
-                 <h4 class="mb-4 text-center mt-4"><img src="https://cdn-icons-png.flaticon.com/128/684/684835.png" style="width: auto; height: 25px;"><img src="https://cdn-icons-png.flaticon.com/128/684/684825.png" class="mx-1" style="width: auto; height: 25px;">Рассылки | {{ count }}</h4>
+                 <h4 class="mb-2 text-center mt-4"><img src="https://cdn-icons-png.flaticon.com/128/684/684835.png" style="width: auto; height: 25px;"><img src="https://cdn-icons-png.flaticon.com/128/684/684825.png" class="mx-1" style="width: auto; height: 25px;">Рассылки | Всего: {{ count }}</h4>
+            </div>
+            <div class="col-12 mt-1">
+                 <h4 class="mb-4 text-center mt-2">
+                     <a href="{% url 'mailing:campaign_list_created' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Созданные</a> | <a href="{% url 'mailing:campaign_list_active' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Актинвные</a> | <a href="{% url 'mailing:campaign_list_compleated' %}" class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0">Завершенные</a>
+                 </h4>
             </div>
                 <div class="col-12">
                     <div class="row">

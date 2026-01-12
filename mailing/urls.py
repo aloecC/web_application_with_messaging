@@ -5,7 +5,8 @@ from .views import MessageDeleteView, MessageUpdateView, MessageCreateView, Mess
     CampaignCreateView, CampaignDetailView, CampaignUpdateView, CampaignDeleteView, CampaignListView, \
     CampaignView, StartEmailAttemptView, StopEmailAttemptView, EmailAttemptListView, EmailAttemptDetailView, \
     EmailAttemptDeleteView, ContactsTemplateView, EmailAttemptSuccessfulListView, EmailAttemptFailedListView, \
-    CampaignBreakAllView, CampaignStartAllView
+    CampaignBreakAllView, CampaignStartAllView, CampaignListActiveView, CampaignListCreatedView, \
+    CampaignListCompletedView
 
 #Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
 app_name = 'mailing'
@@ -36,9 +37,13 @@ urlpatterns = [
     path('campaigns/break/', CampaignBreakAllView.as_view(), name='campaign_break'),
     path('campaigns/start/', CampaignStartAllView.as_view(), name='campaign_start'),
 
-    path('campaign/new/', CampaignCreateView.as_view(), name='campaign_create'),
-    path('campaigns/', CampaignListView.as_view(), name='campaign_list'),
+    path('campaigns/all/', CampaignListView.as_view(), name='campaign_list'),
+    path('campaigns/active/', CampaignListActiveView.as_view(), name='campaign_list_active'),
+    path('campaigns/created/', CampaignListCreatedView.as_view(), name='campaign_list_created'),
+    path('campaigns/compleated/', CampaignListCompletedView.as_view(), name='campaign_list_compleated'),
+
     path('home/', CampaignView.as_view(), name='home'),
+    path('campaign/new/', CampaignCreateView.as_view(), name='campaign_create'),
     path('campaign/<int:pk>/edit/', CampaignUpdateView.as_view(), name='campaign_edit'),
     path('campaign/<int:pk>/delete/', CampaignDeleteView.as_view(), name='campaign_delete'),
 

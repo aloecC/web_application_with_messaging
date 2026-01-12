@@ -38,8 +38,10 @@
 <div class="text-end">
         <a href="{% url 'mailing:campaign_list' %}" ><img src="https://cdn-icons-png.flaticon.com/128/2728/2728745.png" style="width: auto; height: 35px;" class="mx-1" title="Вернуться к списку"></a>
     {% if is_owner %}
+        {% if campaign.status == 'Создана'%}
         <a href="{% url 'mailing:campaign_edit' campaign.pk %}"><img src="https://cdn-icons-png.flaticon.com/128/8203/8203722.png" style="width: auto; height: 35px;" class="mx-1" title="Редактировать"></a>
-        <a href="{% url 'mailing:campaign_delete' campaign.pk %}"><img src="https://cdn-icons-png.flaticon.com/128/5074/5074264.png" style="width: auto; height: 35px;" class="mx-1" title="Удалить"></a>
+        {% endif %}
+    <a href="{% url 'mailing:campaign_delete' campaign.pk %}"><img src="https://cdn-icons-png.flaticon.com/128/5074/5074264.png" style="width: auto; height: 35px;" class="mx-1" title="Удалить"></a>
     {% endif %}
     {% if is_manager %}
         <a href="{% url 'users:user_detail' user_owner.username %}" ><img src="https://cdn-icons-png.flaticon.com/128/4466/4466403.png" style="width: auto; height: 35px;" class="mx-1" title="Перейти к отправителю"></a>

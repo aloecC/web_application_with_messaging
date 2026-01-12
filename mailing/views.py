@@ -218,6 +218,90 @@ class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return True
 
 
+class CampaignListActiveView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Отображение списка активных рассылок"""
+    model = Campaign
+    template_name = 'mailing/campaign_list_active.html'
+    context_object_name = 'campaignes'
+
+    def get_queryset(self):
+        if self.request.user.groups.filter(name='Менеджер').exists():
+            queryset = Campaign.objects.filter(status='Запущена')
+        else:
+            queryset = Campaign.objects.filter(owner=self.request.user, status='Запущена')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['count'] = self.get_count()
+        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+        return context
+
+    def get_count(self):
+        """Получение количества рассылок"""
+        campaignes = self.get_queryset()
+        return campaignes.count()
+
+    def test_func(self):
+        return True
+
+
+class CampaignListCreatedView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Отображение списка созданных рассылок"""
+    model = Campaign
+    template_name = 'mailing/campaign_list_created.html'
+    context_object_name = 'campaignes'
+
+    def get_queryset(self):
+        if self.request.user.groups.filter(name='Менеджер').exists():
+            queryset = Campaign.objects.filter(status='Создана')
+        else:
+            queryset = Campaign.objects.filter(owner=self.request.user, status='Создана')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['count'] = self.get_count()
+        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+        return context
+
+    def get_count(self):
+        """Получение количества рассылок"""
+        campaignes = self.get_queryset()
+        return campaignes.count()
+
+    def test_func(self):
+        return True
+
+
+class CampaignListCompletedView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Отображение списка завершенных рассылок"""
+    model = Campaign
+    template_name = 'mailing/campaign_list_completed.html'
+    context_object_name = 'campaignes'
+
+    def get_queryset(self):
+        if self.request.user.groups.filter(name='Менеджер').exists():
+            queryset = Campaign.objects.filter(status='Завершена')
+        else:
+            queryset = Campaign.objects.filter(owner=self.request.user, status='Завершена')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['count'] = self.get_count()
+        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+        return context
+
+    def get_count(self):
+        """Получение количества рассылок"""
+        campaignes = self.get_queryset()
+        return campaignes.count()
+
+    def test_func(self):
+        return True
+
+
 @method_decorator(cache_page(60 * 15), name='dispatch')
 class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
     """Отображение главной страницы"""
