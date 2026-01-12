@@ -3,10 +3,10 @@ from django.urls import path, reverse_lazy
 from .forms import CustomAuthenticationForm
 
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, \
-    PasswordResetConfirmView, PasswordResetCompleteView
+    PasswordResetConfirmView, PasswordResetCompleteView, PasswordChangeDoneView
 
 from .views import RegisterView, UserDetailView, UserProfileEditView, VerifyView, UsersListView, UserBlockView, \
-    UserEndBlockView, DeleteProfileView
+    UserEndBlockView, DeleteProfileView, UserPasswordChange, UserProfileView
 
 #Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
 app_name = 'users'
@@ -20,17 +20,18 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='mailing:campaign_list'), name='logout'),
     path('users/', UsersListView.as_view(), name='user_list'),
 
-    path('profile/<str:username>/', UserDetailView.as_view(), name='user_detail'),
-    path('profile/edit/<str:username>/', UserProfileEditView.as_view(), name='edit_profile'),
+    path('user/detail/<str:username>/', UserDetailView.as_view(), name='user_detail'),
+    path('profile/', UserProfileView.as_view(), name='user_profile'),
+    path('profile/edit/', UserProfileEditView.as_view(), name='edit_profile'),
 
     path('profile/block/<str:username>/', UserBlockView.as_view(), name='user_block'),
     path('profile/endblock/<str:username>/', UserEndBlockView.as_view(), name='user_end_block'),
 
     path('profile/delete/<str:username>/', DeleteProfileView.as_view(), name='delete_profile'),
 
-    #path('password-change/', views.UserPasswordChange.as_view(), name="password_change"),
-    #path('password-change/done/', PasswordChangeDoneView.as_view(template_name="users/password_change_done.html"),
-         #name="password_change_done"),
+    path('password-change/', UserPasswordChange.as_view(), name="password_change"),
+    path('password-change/done/', PasswordChangeDoneView.as_view(template_name="users/password_change_done.html"),
+         name="password_change_done"),
 
     path('password-reset/',
          PasswordResetView.as_view(

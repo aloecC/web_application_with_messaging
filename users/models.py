@@ -21,9 +21,13 @@ class CustomUser(AbstractUser):
 
 
 class TemporaryUser(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     verification_code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    email = models.EmailField(unique=True, null=True, blank=True)
+    password = models.CharField(max_length=128, null=True, blank=True)
+    username = models.CharField(max_length=128, unique=True, null=True, blank=True)
+
     def is_expired(self):
         return timezone.now() > self.created_at + timezone.timedelta(minutes=5)
+

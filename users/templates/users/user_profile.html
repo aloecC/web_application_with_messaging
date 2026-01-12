@@ -1,0 +1,48 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Личный профиль{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-3">
+    </div>
+    <div class="col-6 mt-3 border-bg-dark">
+        <div class="rounded text-start w-100 btn btn-outline-light border border-secondary-subtle">
+                <h6 class=" mt-2 text-success-emphasis">
+                    {% if user.avatar %}
+                        <div class="text-center mx-5">
+                            <img src="{{ user.avatar.url }}" class="rounded mx-auto d-block" style="width: auto; height: 250px;" >
+                        </div>
+                    {% else %}
+                        <div class="text-center mx-5">
+                            <img src="https://cdn-icons-png.flaticon.com/128/149/149071.png" class="rounded mx-auto d-block mt-3" style="width: auto; height: 250px;">
+                        <p class="list-group-item"><a href="{% url 'users:edit_profile' %}" class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover text-dark">Добавьте фото пользователя</a></p>
+                        </div>
+                    {% endif %}
+                    Имя пользователя: <p class="p-3 text-black-50 bg-white mt-1 text-center">{{ user.username }}</p>
+                    Номер телефона: <p class="p-3 text-black-50 bg-white mt-1 text-center">{{ user.phone_number }}</p>
+                    Почта: <p class="p-3  bg-white mt-1 text-center">{{ user.email }}</p>
+                    Статус подтверждения почты: <p class="p-3 bg-white mt-1 text-center">{{ user.email_confirmed }}</p>
+
+                    {% if is_manager %}
+                        Количество клиентов: <p class="p-3 bg-white mt-1 text-center">{{ subscribers_count }}</p>
+                        Количество рассылок: <p class="p-3 bg-white mt-1 text-center">{{ campaign_count }}</p>
+                        Статус: <p class="p-3 bg-white mt-1 text-center">{{ is_block }}</p>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-6 text-start">
+                            <a href="{% url 'mailing:home' %}" class="mx-1"><img src="https://img.icons8.com/?size=160&id=98948&format=png" style="width: auto; height: 50px;" title="На главную"></a>
+                            <a href="{% url 'users:edit_profile'%}" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/8203/8203722.png" style="width: auto; height: 40px;" title="Редактировать"></a>
+                            <a href="{% url 'users:delete_profile' user.username %}" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/5074/5074264.png" style="width: auto; height: 40px;" title="Удалить"></a>
+                            <a href="{% url 'users:password_change' %}" class="mx-1"><img src="https://img.icons8.com/?size=160&id=114069&format=png" style="width: auto; height: 38px;" title="Сменить пароль"></a>
+                        </div>
+                    </div>
+
+                </h6>
+        </div>
+    </div>
+    <div class="col-3">
+    </div>
+</div>
+
+{% endblock %}

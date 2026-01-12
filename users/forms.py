@@ -1,11 +1,11 @@
 import random
 
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.core.mail import send_mail
 
 from config import settings
-from .models import CustomUser
+from .models import CustomUser, TemporaryUser
 
 
 class VerificationCodeForm(forms.Form):
@@ -194,3 +194,8 @@ class ResetPasswordForm(forms.Form):
             }
         )
 
+
+class UserPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(label="Старый пароль", widget=forms.PasswordInput(attrs={'class': 'form-input'}))
+    new_password1 = forms.CharField(label="Новый пароль", widget=forms.PasswordInput(attrs={'class': 'form-input'}))
+    new_password2 = forms.CharField(label="Подтверждение пароля", widget=forms.PasswordInput(attrs={'class': 'form-input'}))
