@@ -21,8 +21,14 @@ from django.core.mail import send_mail
 
 from config.settings import DEFAULT_FROM_EMAIL, EMAIL_HOST_USER
 from mailing.models import Campaign, Subscriber
-from .forms import CustomAuthenticationForm, UserProfileForm, VerificationCodeForm, \
-    ResetPasswordForm, CustomUserCreationForm, UserPasswordChangeForm
+from .forms import (
+    CustomAuthenticationForm,
+    UserProfileForm,
+    VerificationCodeForm,
+    ResetPasswordForm,
+    CustomUserCreationForm,
+    UserPasswordChangeForm,
+)
 from .models import CustomUser, TemporaryUser
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
@@ -32,14 +38,14 @@ from django.contrib import messages
 
 
 class RegisterView(FormView):
-    template_name = 'users/register.html'
+    template_name = "users/register.html"
     form_class = CustomUserCreationForm
-    success_url = reverse_lazy('users:verify')
+    success_url = reverse_lazy("users:verify")
 
     def form_valid(self, form):
-        email = form.cleaned_data['email']
-        password = form.cleaned_data['password1']
-        username = form.cleaned_data['username']
+        email = form.cleaned_data["email"]
+        password = form.cleaned_data["password1"]
+        username = form.cleaned_data["username"]
 
         verification_code = self.send_verification_email(email)
 
@@ -48,19 +54,23 @@ class RegisterView(FormView):
             email=email,
             verification_code=verification_code,
             password=password,
-            username=username
+            username=username,
         )
 
-        self.request.session['email'] = email
-        messages.success(self.request, 'Код подтверждения отправлен на вашу электронную почту.')
+        self.request.session["email"] = email
+        messages.success(
+            self.request, "Код подтверждения отправлен на вашу электронную почту."
+        )
         return redirect(self.success_url)
 
     def send_verification_email(self, user_email):
-        verification_code = str(random.randint(100000, 999999))  # Генерация 6-значного кода
+        verification_code = str(
+            random.randint(100000, 999999)
+        )  # Генерация 6-значного кода
 
         send_mail(
-            'Ваш код подтверждения',
-            f'Ваш код подтверждения: {verification_code}',
+            "Ваш код подтверждения",
+            f"Ваш код подтверждения: {verification_code}",
             DEFAULT_FROM_EMAIL,
             [user_email],
             fail_silently=False,
@@ -70,16 +80,16 @@ class RegisterView(FormView):
 
 
 class VerifyView(FormView):
-    template_name = 'users/verify.html'
+    template_name = "users/verify.html"
     form_class = VerificationCodeForm
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
         if form.is_valid():
-            code_entered = form.cleaned_data['verification_code']
+            code_entered = form.cleaned_data["verification_code"]
             try:
                 temporary_user = TemporaryUser.objects.get(
-                    email=request.session['email']
+                    email=request.session["email"]
                 )
 
                 if temporary_user.is_expired():
@@ -92,19 +102,19 @@ class VerifyView(FormView):
                         email=temporary_user.email,
                         username=temporary_user.username,
                         password=temporary_user.password,
-                        email_confirmed=True
+                        email_confirmed=True,
                     )
                     user.set_password(temporary_user.password)
                     user.save()
 
-                    messages.success(request, 'Регистрация завершена успешно!')
+                    messages.success(request, "Регистрация завершена успешно!")
 
                     self.send_welcome_email(user.email)
 
                     # Удаляем временного пользователя после успешной верификации
                     temporary_user.delete()
 
-                    return redirect('mailing:campaign_list')
+                    return redirect("mailing:campaign_list")
                 else:
                     messages.error(request, "Неверный код подтверждения.")
             except TemporaryUser.DoesNotExist:
@@ -119,110 +129,114 @@ class VerifyView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['error_message'] = messages.get_messages(self.request)
+        context["error_message"] = messages.get_messages(self.request)
         return context
 
     def send_welcome_email(self, user_email):
-        subject = 'Добро пожаловать в наш сервис!'
-        message = 'Спасибо что зарегистрировались!'
+        subject = "Добро пожаловать в наш сервис!"
+        message = "Спасибо что зарегистрировались!"
         from_email = DEFAULT_FROM_EMAIL
-        recipient_list = [user_email,]
+        recipient_list = [
+            user_email,
+        ]
         send_mail(subject, message, from_email, recipient_list)
 
 
 class LoginView(View):
     """Вход в систему"""
+
     def get(self, request, *args, **kwargs):
-        return render(request, 'login.html')
+        return render(request, "login.html")
 
     def post(self, request, *args, **kwargs):
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST.get("username")
+        password = request.POST.get("password")
 
         # Логика аутентификации пользователя
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             if user.is_block:
-                return render(request, 'login.html', {'error': 'Данный пользователь заблокирован'})
+                return render(
+                    request, "login.html", {"error": "Данный пользователь заблокирован"}
+                )
             else:
                 login(request, user)
                 print(f"Отправка письма на: {user.email}")
                 self.send_login_email(user.email)
-                return redirect('home')
+                return redirect("home")
         else:
             # Обработка ошибки аутентификации
-            return render(request, 'login.html', {'error': 'Неверные учетные данные'})
+            return render(request, "login.html", {"error": "Неверные учетные данные"})
 
     def send_login_email(self, user_email):
-        subject = 'Произведена попытка входа'
-        message = 'Если это не вы - смените пароль по ссылке ниже'
+        subject = "Произведена попытка входа"
+        message = "Если это не вы - смените пароль по ссылке ниже"
         from_email = DEFAULT_FROM_EMAIL
-        recipient_list = [user_email,]
+        recipient_list = [
+            user_email,
+        ]
         send_mail(subject, message, from_email, recipient_list)
 
 
 class UserDetailView(View):
     def get(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
-        is_block = ''
+        is_block = ""
         if user.is_block == True:
-            is_block = 'Заблокирован'
+            is_block = "Заблокирован"
         else:
-            is_block = 'Не заблокирован'
+            is_block = "Не заблокирован"
 
         context = {
-            'user': user,
-            'is_manager': self.request.user.groups.filter(name='Менеджер').exists(),
-            'subscribers_count': Subscriber.objects.filter(owner=user).count(),
-            'campaign_count': Campaign.objects.filter(owner=user).count(),
-            'is_owner_profile': user.pk == self.request.user.pk,
-            'is_block': is_block,
-
+            "user": user,
+            "is_manager": self.request.user.groups.filter(name="Менеджер").exists(),
+            "subscribers_count": Subscriber.objects.filter(owner=user).count(),
+            "campaign_count": Campaign.objects.filter(owner=user).count(),
+            "is_owner_profile": user.pk == self.request.user.pk,
+            "is_block": is_block,
         }
-        return render(request, 'users/user_detail.html', context)
+        return render(request, "users/user_detail.html", context)
 
 
 class UserProfileView(View):
-    """Личный профиль """
+    """Личный профиль"""
+
     def get(self, request):
         user = self.request.user
-        is_block = ''
+        is_block = ""
         if user.is_block == True:
-            is_block = 'Заблокирован'
+            is_block = "Заблокирован"
         else:
-            is_block = 'Не заблокирован'
+            is_block = "Не заблокирован"
 
         context = {
-            'user': user,
-            'is_manager': self.request.user.groups.filter(name='Менеджер').exists(),
-            'subscribers_count': Subscriber.objects.filter(owner=user).count(),
-            'campaign_count': Campaign.objects.filter(owner=user).count(),
-            'is_block': is_block,
-
+            "user": user,
+            "is_manager": self.request.user.groups.filter(name="Менеджер").exists(),
+            "subscribers_count": Subscriber.objects.filter(owner=user).count(),
+            "campaign_count": Campaign.objects.filter(owner=user).count(),
+            "is_block": is_block,
         }
-        return render(request, 'users/user_profile.html', context)
+        return render(request, "users/user_profile.html", context)
 
 
 class UsersListView(View):
     def get(self, request):
         users = CustomUser.objects.all()
 
-        context = {
-            'users': users,
-            'users_count': users.count()
-        }
+        context = {"users": users, "users_count": users.count()}
 
-        return render(request, 'users/users_list.html', context)
+        return render(request, "users/users_list.html", context)
 
 
-@method_decorator(cache_page(60*15), name='dispatch')
+@method_decorator(cache_page(60 * 15), name="dispatch")
 class UserProfileEditView(LoginRequiredMixin, View):
     """Редактирование профиля пользователя"""
+
     def get(self, request):
         user = self.request.user
         form = UserProfileForm(instance=request.user)
-        return render(request, 'users/edit_profile.html', {'form': form})
+        return render(request, "users/edit_profile.html", {"form": form})
 
     def post(self, request):
         user = self.request.user
@@ -230,12 +244,15 @@ class UserProfileEditView(LoginRequiredMixin, View):
 
         if form.is_valid():
             form.save()
-            return redirect('users:user_profile')  # Укажите свой URL для перенаправления после редактирования профиля
-        return render(request, 'users/edit_profile.html', {'form': form})
+            return redirect(
+                "users:user_profile"
+            )  # Укажите свой URL для перенаправления после редактирования профиля
+        return render(request, "users/edit_profile.html", {"form": form})
 
 
 class UserBlockView(LoginRequiredMixin, UserPassesTestMixin, View):
     """Блокировка пользователя"""
+
     def post(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
 
@@ -244,16 +261,16 @@ class UserBlockView(LoginRequiredMixin, UserPassesTestMixin, View):
         user.save()
 
         send_mail(
-                subject='Блокировка',
-                message=f'{user.username}, спешу сообщить, что вы были заблокированы. ',
-                from_email=f'{EMAIL_HOST_USER}',
-                recipient_list=[user.email],
-                )
+            subject="Блокировка",
+            message=f"{user.username}, спешу сообщить, что вы были заблокированы. ",
+            from_email=f"{EMAIL_HOST_USER}",
+            recipient_list=[user.email],
+        )
 
-        return redirect('users:user_detail', username=username)
+        return redirect("users:user_detail", username=username)
 
     def test_func(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
+        if self.request.user.groups.filter(name="Менеджер").exists():
             return True
 
 
@@ -268,33 +285,35 @@ class UserEndBlockView(LoginRequiredMixin, UserPassesTestMixin, View):
         user.save()
 
         send_mail(
-            subject='Снятие блокировки',
-            message=f'{user.username}, спешу сообщить, что вы снова можете пользоваться нашем сервисом.',
-            from_email=f'{EMAIL_HOST_USER}',
+            subject="Снятие блокировки",
+            message=f"{user.username}, спешу сообщить, что вы снова можете пользоваться нашем сервисом.",
+            from_email=f"{EMAIL_HOST_USER}",
             recipient_list=[user.email],
         )
 
-        return redirect('users:user_detail', username=username)
+        return redirect("users:user_detail", username=username)
 
     def test_func(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
+        if self.request.user.groups.filter(name="Менеджер").exists():
             return True
 
 
 class DeleteProfileView(LoginRequiredMixin, View):
     """Представление для удаления профиля пользователя"""
 
-    def get(self, request,  username):
+    def get(self, request, username):
         """Показать страницу подтверждения удаления"""
         user = get_object_or_404(CustomUser, username=username)
-        return render(request, 'users/delete_profile.html', {'user': user})
+        return render(request, "users/delete_profile.html", {"user": user})
 
     def post(self, request, username):
         """Удалить профиль пользователя"""
         user = get_object_or_404(CustomUser, username=username)
         user.delete()
         messages.success(request, "Ваш профиль был успешно удален.")
-        return redirect('mailing:home')  # Перенаправление на главную страницу или другую страницу
+        return redirect(
+            "mailing:home"
+        )  # Перенаправление на главную страницу или другую страницу
 
 
 class UserPasswordChange(PasswordChangeView):

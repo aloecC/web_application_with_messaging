@@ -6,8 +6,10 @@ from pathlib import Path
 load_dotenv(override=True)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent #Настройка котороая содержит путь до текущего приложения
-#Нужен для построения абсолютных путей
+BASE_DIR = (
+    Path(__file__).resolve().parent.parent
+)  # Настройка котороая содержит путь до текущего приложения
+# Нужен для построения абсолютных путей
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -15,20 +17,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent #Настройка котор
 # SECURITY WARNING: keep the secret key used in production secret!
 # Специальный секретный путь используемый для криптографических подписей
 # Нельзя загружать в удаленный репозиторий
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True if os.getenv('DEBUG') else False #Режим отладки
+DEBUG = True if os.getenv("DEBUG") else False  # Режим отладки
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1'] #Список доменных имен которые могут обслуживаться нашим приложением
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+]  # Список доменных имен которые могут обслуживаться нашим приложением
 
 
-BASE_DIR = Path(__file__).resolve().parent.parent #Настройка котороая содержит путь до текущего приложения
-#Нужен для построения абсолютных путей
+BASE_DIR = (
+    Path(__file__).resolve().parent.parent
+)  # Настройка котороая содержит путь до текущего приложения
+# Нужен для построения абсолютных путей
 
 
 # Application definition
-#Список приложений
+# Список приложений
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -36,14 +43,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'mailing',
-    'users'
+    "mailing",
+    "users",
 ]
 
-#SITE_ID = 1  # или другой ID сайта, который вы используете
+# SITE_ID = 1  # или другой ID сайта, который вы используете
 1
 
-#Список приложений предосталяемых промежуточное ПО,которое обрабатывает входящие запрсы и исходящие ответы
+# Список приложений предосталяемых промежуточное ПО,которое обрабатывает входящие запрсы и исходящие ответы
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -54,7 +61,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "config.urls" #Путь до модуля с маршрутами
+ROOT_URLCONF = "config.urls"  # Путь до модуля с маршрутами
 
 TEMPLATES = [
     {
@@ -71,27 +78,27 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "config.wsgi.application" #Путь к WSGI приложениям,точа входа для совместимости с WSGI серверами
+WSGI_APPLICATION = "config.wsgi.application"  # Путь к WSGI приложениям,точа входа для совместимости с WSGI серверами
 
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-#Настройка для подключения к базе данных
+# Настройка для подключения к базе данных
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.getenv('NAME'),
-        "USER": os.getenv('USER'),
-        "PASSWORD": os.getenv('PASSWORD'),
-        'HOST': os.getenv('HOST'),
-        'PORT': os.getenv('PORT')
+        "NAME": os.getenv("NAME"),
+        "USER": os.getenv("USER"),
+        "PASSWORD": os.getenv("PASSWORD"),
+        "HOST": os.getenv("HOST"),
+        "PORT": os.getenv("PORT"),
     }
 }
 
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-#Список валидаторов, который используется для проверки надежности паролей пользователей
+# Список валидаторов, который используется для проверки надежности паролей пользователей
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -111,23 +118,25 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us" #Язык для проекта
+LANGUAGE_CODE = "en-us"  # Язык для проекта
 
-TIME_ZONE = "Europe/Moscow" #Часовая зона для проекта
+TIME_ZONE = "Europe/Moscow"  # Часовая зона для проекта
 
-USE_I18N = True #Поддержка интернацинализации
-USE_L18N = True #Поддержка локализации
-USE_TZ = True #Поддержка временных зон
+USE_I18N = True  # Поддержка интернацинализации
+USE_L18N = True  # Поддержка локализации
+USE_TZ = True  # Поддержка временных зон
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/" #Маршрут для доступа к статике
-STATICFILES_DIRS = [BASE_DIR / 'static'] #Список директорий на диске из которых подгружаются статические файлы
+STATIC_URL = "static/"  # Маршрут для доступа к статике
+STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]  # Список директорий на диске из которых подгружаются статические файлы
 
-MEDIA_URL = '/media/' #Маршрут для доступа к медиа-файлам
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"  # Маршрут для доступа к медиа-файлам
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -135,27 +144,27 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Кастомная настройка пользователя
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = "users.CustomUser"
 
 # Настройки для яндекс почты
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.yandex.ru'
-EMAIL_PORT = 465 # Исходящая почта, 992- Входящая почта
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = "smtp.yandex.ru"
+EMAIL_PORT = 465  # Исходящая почта, 992- Входящая почта
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-LOGIN_REDIRECT_URL = 'mailing:campaign_list'
-LOGOUT_REDIRECT_URL = 'mailing:campaign_list'
-LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = "mailing:campaign_list"
+LOGOUT_REDIRECT_URL = "mailing:campaign_list"
+LOGIN_URL = "users:login"
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
     }
 }
-#Redis
+# Redis

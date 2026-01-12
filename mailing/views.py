@@ -19,16 +19,17 @@ from mailing.models import Message, Subscriber, Campaign, EmailAttempt
 from users.models import CustomUser
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 15), name="dispatch")
 class MessageListView(LoginRequiredMixin, ListView):
     """Отображение списка сообщений"""
+
     model = Message
-    template_name = 'mailing/messages_list.html'
-    context_object_name = 'messages'
+    template_name = "mailing/messages_list.html"
+    context_object_name = "messages"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['count'] = self.get_count()
+        context["count"] = self.get_count()
         return context
 
     def get_count(self):
@@ -39,24 +40,28 @@ class MessageListView(LoginRequiredMixin, ListView):
         return count
 
     def get_queryset(self):
-        queryset = cache.get('my_message_list')
+        queryset = cache.get("my_message_list")
         if not queryset:
             queryset = Message.objects.all()
-            cache.set('my_message_list', queryset, 60 * 15)
+            cache.set("my_message_list", queryset, 60 * 15)
         return queryset
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 15), name="dispatch")
 class MessageDetailView(LoginRequiredMixin, DetailView):
     """Подробная информация о сообщении"""
+
     model = Message
-    template_name = 'mailing/message_detail.html'
-    context_object_name = 'message'
+    template_name = "mailing/message_detail.html"
+    context_object_name = "message"
 
     def get_context_data(self, **kwargs):
         # Получаем контекст от родительского класса
         context = super().get_context_data(**kwargs)
-        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджеры').exists()
+        context["is_manager"] = (
+            self.request.user.is_staff
+            or self.request.user.groups.filter(name="Менеджеры").exists()
+        )
         # Получаем сообщение из контекста
         message = self.object
 
@@ -65,47 +70,51 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
 
 class MessageCreateView(LoginRequiredMixin, CreateView):
     """Создание сообщения"""
+
     model = Message
-    template_name = 'mailing/message_form.html'
-    fields = ['subject', 'body']
-    success_url = reverse_lazy('mailing:message_list')
+    template_name = "mailing/message_form.html"
+    fields = ["subject", "body"]
+    success_url = reverse_lazy("mailing:message_list")
 
 
 class MessageUpdateView(LoginRequiredMixin, UpdateView):
     """Обновление сообщения"""
+
     model = Message
-    fields = ['subject', 'body']
-    template_name = 'mailing/message_form.html'
-    success_url = reverse_lazy('mailing:message_list')
+    fields = ["subject", "body"]
+    template_name = "mailing/message_form.html"
+    success_url = reverse_lazy("mailing:message_list")
 
 
 class MessageDeleteView(LoginRequiredMixin, DeleteView):
     """Удаление сообщения"""
+
     model = Message
-    template_name = 'mailing/message_confirm_delete.html'
-    success_url = reverse_lazy('mailing:message_list')
+    template_name = "mailing/message_confirm_delete.html"
+    success_url = reverse_lazy("mailing:message_list")
 
 
 class SubscriberListView(LoginRequiredMixin, ListView):
     """Отображение списка получателей"""
-    model = Subscriber
-    template_name = 'mailing/subscriber_list.html'
 
-    context_object_name = 'subscribers'
+    model = Subscriber
+    template_name = "mailing/subscriber_list.html"
+
+    context_object_name = "subscribers"
 
     def get_queryset(self):
-        queryset = cache.get('my_subscriber_list')
+        queryset = cache.get("my_subscriber_list")
         if not queryset:
-            if self.request.user.groups.filter(name='Менеджер').exists():
+            if self.request.user.groups.filter(name="Менеджер").exists():
                 queryset = Subscriber.objects.all()
             else:
                 queryset = Subscriber.objects.filter(owner=self.request.user)
-            cache.set('my_subscriber_list', queryset, 60 * 15)
+            cache.set("my_subscriber_list", queryset, 60 * 15)
         return queryset
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['count'] = self.get_count()
+        context["count"] = self.get_count()
         return context
 
     def get_count(self):
@@ -119,49 +128,63 @@ class SubscriberListView(LoginRequiredMixin, ListView):
         return True
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 15), name="dispatch")
 class SubscriberDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     """Подробная информация о получатели"""
+
     model = Subscriber
-    template_name = 'mailing/subscriber_detail.html'
-    context_object_name = 'subscriber'
+    template_name = "mailing/subscriber_detail.html"
+    context_object_name = "subscriber"
 
     def test_func(self):
         subscriber = self.get_object()
-        if not self.request.user.groups.filter(name='Менеджер').exists() and not self.request.user.is_staff:
+        if (
+            not self.request.user.groups.filter(name="Менеджер").exists()
+            and not self.request.user.is_staff
+        ):
             return self.request.user == subscriber.owner
         return True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
         subscriber = self.get_object()
-        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
-        context['is_owner'] = self.request.user == subscriber.owner
+        context["is_manager"] = (
+            self.request.user.is_staff
+            or self.request.user.groups.filter(name="Менеджер").exists()
+        )
+        context["is_owner"] = self.request.user == subscriber.owner
         return context
 
 
 class SubscriberCreateView(LoginRequiredMixin, CreateView):
     """Создание получателя"""
+
     model = Subscriber
-    template_name = 'mailing/subscriber_form.html'
-    fields = ['email', 'full_name', 'comment']
-    success_url = reverse_lazy('mailing:subscriber_list')
+    template_name = "mailing/subscriber_form.html"
+    fields = ["email", "full_name", "comment"]
+    success_url = reverse_lazy("mailing:subscriber_list")
 
     def form_valid(self, form):
-        form.instance.owner = self.request.user  # Устанавливаем владельца на текущего пользователя
+        form.instance.owner = (
+            self.request.user
+        )  # Устанавливаем владельца на текущего пользователя
         return super().form_valid(form)
 
 
 class SubscriberUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """Обновление получателя"""
+
     model = Subscriber
-    fields = ['email', 'full_name', 'comment']
-    template_name = 'mailing/subscriber_form.html'
-    success_url = reverse_lazy('mailing:subscriber_list')
+    fields = ["email", "full_name", "comment"]
+    template_name = "mailing/subscriber_form.html"
+    success_url = reverse_lazy("mailing:subscriber_list")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
-        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+        context["is_manager"] = (
+            self.request.user.is_staff
+            or self.request.user.groups.filter(name="Менеджер").exists()
+        )
         return context
 
     def test_func(self):
@@ -171,9 +194,10 @@ class SubscriberUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class SubscriberDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """Удаление получателя"""
+
     model = Subscriber
-    template_name = 'mailing/subscriber_confirm_delete.html'
-    success_url = reverse_lazy('mailing:subscriber_list')
+    template_name = "mailing/subscriber_confirm_delete.html"
+    success_url = reverse_lazy("mailing:subscriber_list")
 
     def test_func(self):
         subscriber = self.get_object()
@@ -182,12 +206,13 @@ class SubscriberDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Отображение списка рассылок"""
+
     model = Campaign
-    template_name = 'mailing/campaign_list.html'
-    context_object_name = 'campaignes'
+    template_name = "mailing/campaign_list.html"
+    context_object_name = "campaignes"
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
+        if self.request.user.groups.filter(name="Менеджер").exists():
             queryset = Campaign.objects.all()
         else:
             queryset = Campaign.objects.filter(owner=self.request.user)
@@ -204,9 +229,12 @@ class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['count'] = self.get_count()
-        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
-        context['is_status_active'] = self.get_active_status()
+        context["count"] = self.get_count()
+        context["is_manager"] = (
+            self.request.user.is_staff
+            or self.request.user.groups.filter(name="Менеджер").exists()
+        )
+        context["is_status_active"] = self.get_active_status()
         return context
 
     def get_count(self):
@@ -220,21 +248,27 @@ class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
 class CampaignListActiveView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Отображение списка активных рассылок"""
+
     model = Campaign
-    template_name = 'mailing/campaign_list_active.html'
-    context_object_name = 'campaignes'
+    template_name = "mailing/campaign_list_active.html"
+    context_object_name = "campaignes"
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
-            queryset = Campaign.objects.filter(status='Запущена')
+        if self.request.user.groups.filter(name="Менеджер").exists():
+            queryset = Campaign.objects.filter(status="Запущена")
         else:
-            queryset = Campaign.objects.filter(owner=self.request.user, status='Запущена')
+            queryset = Campaign.objects.filter(
+                owner=self.request.user, status="Запущена"
+            )
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['count'] = self.get_count()
-        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+        context["count"] = self.get_count()
+        context["is_manager"] = (
+            self.request.user.is_staff
+            or self.request.user.groups.filter(name="Менеджер").exists()
+        )
         return context
 
     def get_count(self):
@@ -248,21 +282,27 @@ class CampaignListActiveView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
 class CampaignListCreatedView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Отображение списка созданных рассылок"""
+
     model = Campaign
-    template_name = 'mailing/campaign_list_created.html'
-    context_object_name = 'campaignes'
+    template_name = "mailing/campaign_list_created.html"
+    context_object_name = "campaignes"
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
-            queryset = Campaign.objects.filter(status='Создана')
+        if self.request.user.groups.filter(name="Менеджер").exists():
+            queryset = Campaign.objects.filter(status="Создана")
         else:
-            queryset = Campaign.objects.filter(owner=self.request.user, status='Создана')
+            queryset = Campaign.objects.filter(
+                owner=self.request.user, status="Создана"
+            )
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['count'] = self.get_count()
-        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+        context["count"] = self.get_count()
+        context["is_manager"] = (
+            self.request.user.is_staff
+            or self.request.user.groups.filter(name="Менеджер").exists()
+        )
         return context
 
     def get_count(self):
@@ -276,21 +316,27 @@ class CampaignListCreatedView(LoginRequiredMixin, UserPassesTestMixin, ListView)
 
 class CampaignListCompletedView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Отображение списка завершенных рассылок"""
+
     model = Campaign
-    template_name = 'mailing/campaign_list_completed.html'
-    context_object_name = 'campaignes'
+    template_name = "mailing/campaign_list_completed.html"
+    context_object_name = "campaignes"
 
     def get_queryset(self):
-        if self.request.user.groups.filter(name='Менеджер').exists():
-            queryset = Campaign.objects.filter(status='Завершена')
+        if self.request.user.groups.filter(name="Менеджер").exists():
+            queryset = Campaign.objects.filter(status="Завершена")
         else:
-            queryset = Campaign.objects.filter(owner=self.request.user, status='Завершена')
+            queryset = Campaign.objects.filter(
+                owner=self.request.user, status="Завершена"
+            )
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['count'] = self.get_count()
-        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
+        context["count"] = self.get_count()
+        context["is_manager"] = (
+            self.request.user.is_staff
+            or self.request.user.groups.filter(name="Менеджер").exists()
+        )
         return context
 
     def get_count(self):
@@ -302,45 +348,46 @@ class CampaignListCompletedView(LoginRequiredMixin, UserPassesTestMixin, ListVie
         return True
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 15), name="dispatch")
 class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
     """Отображение главной страницы"""
+
     model = Campaign
-    template_name = 'mailing/home.html'
-    context_object_name = 'campaignes'
+    template_name = "mailing/home.html"
+    context_object_name = "campaignes"
 
     def get(self, request):
         campaigns = self.get_user_campaigns()
         subscribers = self.get_user_subscribers()
-        active_campaigns = campaigns.filter(status='Запущена').count()
+        active_campaigns = campaigns.filter(status="Запущена").count()
 
-        if not self.request.user.groups.filter(name='Менеджер').exists():
+        if not self.request.user.groups.filter(name="Менеджер").exists():
             unique_recipients = subscribers.filter(owner=self.request.user).count()
         else:
             unique_recipients = subscribers.all().count()
 
-
         context = {
-            'campaignes': campaigns,
-            'total_campaigns': campaigns.count(),
-            'active_campaigns': active_campaigns,
-            'unique_recipients_count': unique_recipients,
-            'is_manager': self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists(),
-            'users_count': CustomUser.objects.all().count()
+            "campaignes": campaigns,
+            "total_campaigns": campaigns.count(),
+            "active_campaigns": active_campaigns,
+            "unique_recipients_count": unique_recipients,
+            "is_manager": self.request.user.is_staff
+            or self.request.user.groups.filter(name="Менеджер").exists(),
+            "users_count": CustomUser.objects.all().count(),
         }
 
         return render(request, self.template_name, context)
 
     def get_user_campaigns(self):
         """Получение рассылок пользователя"""
-        if self.request.user.groups.filter(name='Менеджер').exists():
+        if self.request.user.groups.filter(name="Менеджер").exists():
             return Campaign.objects.all()
         else:
             return Campaign.objects.filter(owner=self.request.user)
 
     def get_user_subscribers(self):
         """Получение получателей пользователя"""
-        if self.request.user.groups.filter(name='Менеджер').exists():
+        if self.request.user.groups.filter(name="Менеджер").exists():
             return Subscriber.objects.all()
         else:
             return Subscriber.objects.filter(owner=self.request.user)
@@ -351,44 +398,54 @@ class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     """Подробная информация о рассылке"""
+
     model = Campaign
-    template_name = 'mailing/campaign_detail.html'
-    context_object_name = 'campaign'
+    template_name = "mailing/campaign_detail.html"
+    context_object_name = "campaign"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         current_campaign = self.get_object()
         campaign = self.get_object()
         user_owner = campaign.owner
-        context['subscribers'] = current_campaign.subscribers.all()
-        context['campaignes'] = Campaign.objects.all()
-        context['is_manager'] = self.request.user.is_staff or self.request.user.groups.filter(name='Менеджер').exists()
-        context['is_owner'] = self.request.user == user_owner,
-        context['user_owner'] = user_owner
+        context["subscribers"] = current_campaign.subscribers.all()
+        context["campaignes"] = Campaign.objects.all()
+        context["is_manager"] = (
+            self.request.user.is_staff
+            or self.request.user.groups.filter(name="Менеджер").exists()
+        )
+        context["is_owner"] = (self.request.user == user_owner,)
+        context["user_owner"] = user_owner
         return context
 
     def test_func(self):
         campaign = self.get_object()
-        if not self.request.user.groups.filter(name='Менеджер').exists() and not self.request.user.is_staff:
+        if (
+            not self.request.user.groups.filter(name="Менеджер").exists()
+            and not self.request.user.is_staff
+        ):
             return self.request.user == campaign.owner
         return True
 
 
 class CampaignCreateView(LoginRequiredMixin, CreateView):
     """Создание новой рассылки"""
+
     form_class = CampaignForm
-    template_name = 'mailing/campaign_form.html'
-    success_url = reverse_lazy('mailing:campaign_list')
+    template_name = "mailing/campaign_form.html"
+    success_url = reverse_lazy("mailing:campaign_list")
 
     def get(self, request, *args, **kwargs):
         form = self.get_form()
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {"form": form})
 
     def post(self, request, *args, **kwargs):
         # Логика для создания новой рассылки
         form = self.get_form()
         if form.is_valid():
-            status_active = Campaign.objects.filter(status_active=True).exists()  # Проверяем, есть ли активные рассылки
+            status_active = Campaign.objects.filter(
+                status_active=True
+            ).exists()  # Проверяем, есть ли активные рассылки
             new_campaign = form.save(commit=False)
             new_campaign.status_active = status_active
             new_campaign.owner = request.user
@@ -400,16 +457,17 @@ class CampaignCreateView(LoginRequiredMixin, CreateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
+        kwargs["user"] = self.request.user
         return kwargs
 
 
 class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """Обновление рассылки"""
+
     model = Campaign
     form_class = CampaignForm
-    template_name = 'mailing/campaign_form.html'
-    success_url = reverse_lazy('mailing:campaign_list')
+    template_name = "mailing/campaign_form.html"
+    success_url = reverse_lazy("mailing:campaign_list")
 
     def test_func(self):
         campaign = self.get_object()
@@ -417,30 +475,35 @@ class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
+        kwargs["user"] = self.request.user
         return kwargs
 
 
 class CampaignDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """Удаление рассылки"""
+
     model = Campaign
-    template_name = 'mailing/campaign_confirm_delete.html'
-    success_url = reverse_lazy('mailing:campaign_list')
+    template_name = "mailing/campaign_confirm_delete.html"
+    success_url = reverse_lazy("mailing:campaign_list")
 
     def test_func(self):
         campaign = self.get_object()
-        if not self.request.user.groups.filter(name='Менеджер').exists() and not self.request.user.is_staff:
+        if (
+            not self.request.user.groups.filter(name="Менеджер").exists()
+            and not self.request.user.is_staff
+        ):
             return self.request.user == campaign.owner
         return True
 
 
 class StartEmailAttemptView(LoginRequiredMixin, View):
     """Запуск(создание обьектов 'Попытка рассылки') рассылки"""
+
     def post(self, request, pk):
         campaign = get_object_or_404(Campaign, pk=pk)
         subscribers = campaign.subscribers.all()
 
-        campaign.status = 'Запущена'
+        campaign.status = "Запущена"
         campaign.save()
 
         for subscriber in subscribers:
@@ -448,68 +511,72 @@ class StartEmailAttemptView(LoginRequiredMixin, View):
             email_attempt.owner = self.request.user
             try:
                 response = send_mail(
-                    subject=f'{ campaign.message.subject }',
-                    message=f'{ campaign.message.body }',
-                    from_email=f'{ EMAIL_HOST_USER }',
+                    subject=f"{ campaign.message.subject }",
+                    message=f"{ campaign.message.body }",
+                    from_email=f"{ EMAIL_HOST_USER }",
                     recipient_list=[subscriber.email],
                 )
                 # Если отправка успешна
-                email_attempt.status = 'successful'
+                email_attempt.status = "successful"
                 email_attempt.subscriber = subscriber
 
-                email_attempt.response = f"Sent to {subscriber.full_name} with response {response}"
+                email_attempt.response = (
+                    f"Sent to {subscriber.full_name} with response {response}"
+                )
             except Exception as e:
                 # Если произошла ошибка
-                email_attempt.status = 'failed'
+                email_attempt.status = "failed"
                 email_attempt.response = str(e)
 
                 # Сохраняем информацию о попытке
             email_attempt.subscriber = subscriber
             email_attempt.save()
 
-        campaign.status = 'Завершена'
+        campaign.status = "Завершена"
         campaign.save()
 
-        return redirect('mailing:campaign_detail', pk=pk)
+        return redirect("mailing:campaign_detail", pk=pk)
 
 
 class StopEmailAttemptView(View):
     """Прерывание запуска(создание обьектов 'Попытка рассылки') рассылки"""
+
     def post(self, request, pk):
         campaign = get_object_or_404(Campaign, pk=pk)
-        campaign.status = 'Завершена'
+        campaign.status = "Завершена"
         campaign.save()
 
-        return redirect('mailing:campaign_detail', pk=pk)
+        return redirect("mailing:campaign_detail", pk=pk)
 
 
 class EmailAttemptListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Отображение отчетов по рассылкам"""
+
     model = EmailAttempt
-    template_name = 'mailing/emailattempt_list.html'
-    context_object_name = 'emailattempts'
+    template_name = "mailing/emailattempt_list.html"
+    context_object_name = "emailattempts"
 
     def get_queryset(self):
-        queryset = cache.get('my_email_attempt_list')
+        queryset = cache.get("my_email_attempt_list")
         if not queryset:
-            if self.request.user.groups.filter(name='Менеджер').exists():
+            if self.request.user.groups.filter(name="Менеджер").exists():
                 queryset = EmailAttempt.objects.all()
             else:
                 queryset = EmailAttempt.objects.filter(owner=self.request.user)
-        cache.set('my_email_attempt_list', queryset, 60 * 15)
+        cache.set("my_email_attempt_list", queryset, 60 * 15)
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         emailattempts = self.get_queryset()
 
-        count_successful = emailattempts.filter(status='successful').count()
-        count_failed = emailattempts.filter(status='failed').count()
+        count_successful = emailattempts.filter(status="successful").count()
+        count_failed = emailattempts.filter(status="failed").count()
         count_all = emailattempts.all().count()
 
-        context['count_successful'] = count_successful
-        context['count_failed'] = count_failed
-        context['count_all'] = count_all
+        context["count_successful"] = count_successful
+        context["count_failed"] = count_failed
+        context["count_all"] = count_all
 
         return context
 
@@ -519,18 +586,21 @@ class EmailAttemptListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
 class EmailAttemptSuccessfulListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Отображение списка успешных попыток рассылки"""
+
     model = EmailAttempt
-    template_name = 'mailing/emailattempt_list_successful.html'
-    context_object_name = 'emailattempts'
+    template_name = "mailing/emailattempt_list_successful.html"
+    context_object_name = "emailattempts"
 
     def get_queryset(self):
-        queryset = cache.get('my_email_attempt_successful_list')
+        queryset = cache.get("my_email_attempt_successful_list")
         if not queryset:
-            if self.request.user.groups.filter(name='Менеджер').exists():
-                queryset = EmailAttempt.objects.filter(status='successful')
+            if self.request.user.groups.filter(name="Менеджер").exists():
+                queryset = EmailAttempt.objects.filter(status="successful")
             else:
-                queryset = EmailAttempt.objects.filter(owner=self.request.user, status='successful')
-        cache.set('my_email_attempt_successful_list', queryset, 60 * 15)
+                queryset = EmailAttempt.objects.filter(
+                    owner=self.request.user, status="successful"
+                )
+        cache.set("my_email_attempt_successful_list", queryset, 60 * 15)
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -539,8 +609,8 @@ class EmailAttemptSuccessfulListView(LoginRequiredMixin, UserPassesTestMixin, Li
 
         count_successful = emailattempts.all().count()
 
-        context['emailattempts'] = emailattempts
-        context['count_successful'] = count_successful
+        context["emailattempts"] = emailattempts
+        context["count_successful"] = count_successful
 
         return context
 
@@ -550,18 +620,21 @@ class EmailAttemptSuccessfulListView(LoginRequiredMixin, UserPassesTestMixin, Li
 
 class EmailAttemptFailedListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """Отображение списка не успешных попыток рассылки"""
+
     model = EmailAttempt
-    template_name = 'mailing/emailattempt_list_failed.html'
-    context_object_name = 'emailattempts'
+    template_name = "mailing/emailattempt_list_failed.html"
+    context_object_name = "emailattempts"
 
     def get_queryset(self):
-        queryset = cache.get('my_email_attempt_failed_list')
+        queryset = cache.get("my_email_attempt_failed_list")
         if not queryset:
-            if self.request.user.groups.filter(name='Менеджер').exists():
-                queryset = EmailAttempt.objects.filter(status='failed')
+            if self.request.user.groups.filter(name="Менеджер").exists():
+                queryset = EmailAttempt.objects.filter(status="failed")
             else:
-                queryset = EmailAttempt.objects.filter(owner=self.request.user, status='failed')
-        cache.set('my_email_attempt_failed_list', queryset, 60 * 15)
+                queryset = EmailAttempt.objects.filter(
+                    owner=self.request.user, status="failed"
+                )
+        cache.set("my_email_attempt_failed_list", queryset, 60 * 15)
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -570,8 +643,8 @@ class EmailAttemptFailedListView(LoginRequiredMixin, UserPassesTestMixin, ListVi
 
         count_failed = emailattempts.all().count()
 
-        context['emailattempts'] = emailattempts
-        context['count_failed'] = count_failed
+        context["emailattempts"] = emailattempts
+        context["count_failed"] = count_failed
 
         return context
 
@@ -579,47 +652,57 @@ class EmailAttemptFailedListView(LoginRequiredMixin, UserPassesTestMixin, ListVi
         return True
 
 
-class EmailAttemptDeleteView(LoginRequiredMixin, UserPassesTestMixin,  DeleteView):
+class EmailAttemptDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = EmailAttempt
-    template_name = 'mailing/emailattempt_confirm_delete.html'
-    success_url = reverse_lazy('mailing:emailattempt_list')
+    template_name = "mailing/emailattempt_confirm_delete.html"
+    success_url = reverse_lazy("mailing:emailattempt_list")
 
     def test_func(self):
         emailattempt = self.get_object()
-        if not self.request.user.groups.filter(name='Менеджер').exists() and not self.request.user.is_staff:
+        if (
+            not self.request.user.groups.filter(name="Менеджер").exists()
+            and not self.request.user.is_staff
+        ):
             return self.request.user == emailattempt.owner
         return True
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 15), name="dispatch")
 class EmailAttemptDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     """Подробная информация об отчете"""
+
     model = EmailAttempt
-    template_name = 'mailing/emailattempt_detail.html'
-    context_object_name = 'emailattempt'
+    template_name = "mailing/emailattempt_detail.html"
+    context_object_name = "emailattempt"
 
     def test_func(self):
         emailattempt = self.get_object()
-        if not self.request.user.groups.filter(name='Менеджер').exists() and not self.request.user.is_staff:
+        if (
+            not self.request.user.groups.filter(name="Менеджер").exists()
+            and not self.request.user.is_staff
+        ):
             return self.request.user == emailattempt.owner
         return True
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 15), name="dispatch")
 class ContactsTemplateView(LoginRequiredMixin, TemplateView):
-    template_name = 'mailing/contacts.html'
-    success_url = reverse_lazy('mailing:contacts')
+    template_name = "mailing/contacts.html"
+    success_url = reverse_lazy("mailing:contacts")
 
     def post(self, request, *args, **kwargs):
-        name = request.POST.get('name')
-        message = request.POST.get('message')
-        email = request.POST.get('email')
+        name = request.POST.get("name")
+        message = request.POST.get("message")
+        email = request.POST.get("email")
 
-
-        subject = 'Поддержка'
-        message = f'Сообщение:"{message}". Электронная почта для связи: {email}({name}).'
+        subject = "Поддержка"
+        message = (
+            f'Сообщение:"{message}". Электронная почта для связи: {email}({name}).'
+        )
         from_email = DEFAULT_FROM_EMAIL
-        recipient_list = [DEFAULT_FROM_EMAIL,]
+        recipient_list = [
+            DEFAULT_FROM_EMAIL,
+        ]
         send_mail(subject, message, from_email, recipient_list)
 
         return redirect(self.success_url)
@@ -631,24 +714,25 @@ class ContactsTemplateView(LoginRequiredMixin, TemplateView):
 
 class CampaignBreakAllView(View):
     """Отключение рассылок"""
+
     def post(self, request):
         campaigns = Campaign.objects.all()
         for campaign in campaigns:
             campaign.status_active = False
-            print('Статус изменен')
+            print("Статус изменен")
             campaign.save()
-        print('Рассылка выключена')
-        return redirect('mailing:campaign_list')
+        print("Рассылка выключена")
+        return redirect("mailing:campaign_list")
 
 
 class CampaignStartAllView(View):
     """Включение рассылок"""
+
     def post(self, request):
         campaigns = Campaign.objects.all()
         for campaign in campaigns:
             campaign.status_active = True
-            print('Статус изменен')
+            print("Статус изменен")
             campaign.save()
-        print('Рассылка включена')
-        return redirect('mailing:campaign_list')
-
+        print("Рассылка включена")
+        return redirect("mailing:campaign_list")
