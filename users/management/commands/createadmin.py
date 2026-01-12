@@ -20,6 +20,3 @@ class Command(BaseCommand):
         user.save()
 
         self.stdout.write(self.style.SUCCESS("Администратор успешно создан"))
-
-        # Получение разрешений
-        delete_permission = Permission.objects.get(codename="delete_user")

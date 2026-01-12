@@ -471,9 +471,9 @@ class StartEmailAttemptView(LoginRequiredMixin, View):
             email_attempt.owner = self.request.user
             try:
                 response = send_mail(
-                    subject=f"{ campaign.message.subject }",
-                    message=f"{ campaign.message.body }",
-                    from_email=f"{ EMAIL_HOST_USER }",
+                    subject=f"{campaign.message.subject}",
+                    message=f"{campaign.message.body}",
+                    from_email=f"{EMAIL_HOST_USER}",
                     recipient_list=[subscriber.email],
                 )
                 # Если отправка успешна
