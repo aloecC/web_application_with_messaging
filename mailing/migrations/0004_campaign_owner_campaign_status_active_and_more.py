@@ -26,9 +26,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="campaign",
             name="status_active",
-            field=models.BooleanField(
-                default=True, verbose_name="Возможность рассылки"
-            ),
+            field=models.BooleanField(default=True, verbose_name="Возможность рассылки"),
         ),
         migrations.AddField(
             model_name="emailattempt",
