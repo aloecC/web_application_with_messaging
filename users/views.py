@@ -170,7 +170,7 @@ class UserDetailView(View):
     def get(self, request, username):
         user = get_object_or_404(CustomUser, username=username)
         is_block = ""
-        if user.is_block == True:
+        if user.is_block:
             is_block = "Заблокирован"
         else:
             is_block = "Не заблокирован"
@@ -192,7 +192,7 @@ class UserProfileView(View):
     def get(self, request):
         user = self.request.user
         is_block = ""
-        if user.is_block == True:
+        if user.is_block:
             is_block = "Заблокирован"
         else:
             is_block = "Не заблокирован"
@@ -221,12 +221,10 @@ class UserProfileEditView(LoginRequiredMixin, View):
     """Редактирование профиля пользователя"""
 
     def get(self, request):
-        user = self.request.user
         form = UserProfileForm(instance=request.user)
         return render(request, "users/edit_profile.html", {"form": form})
 
     def post(self, request):
-        user = self.request.user
         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
 
         if form.is_valid():
