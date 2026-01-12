@@ -1,7 +1,7 @@
+from django.conf import settings
+from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from django.core.mail import send_mail
-from django.conf import settings
 
 from mailing.models import Campaign, EmailAttempt
 
@@ -19,11 +19,7 @@ class Command(BaseCommand):
         # Проверка времени
         current_time = timezone.now()
         if not (campaign.start_time <= current_time <= campaign.end_time):
-            self.stdout.write(
-                self.style.ERROR(
-                    "Рассылка не может быть запущена вне разрешенного времени."
-                )
-            )
+            self.stdout.write(self.style.ERROR("Рассылка не может быть запущена вне разрешенного времени."))
             return
 
         # Определение получателей
@@ -42,9 +38,7 @@ class Command(BaseCommand):
                 )
                 # Если отправка успешна
                 email_attempt.status = "successful"
-                email_attempt.server_response = (
-                    f"Sent to {subscriber.full_name} with response {response}"
-                )
+                email_attempt.server_response = f"Sent to {subscriber.full_name} with response {response}"
             except Exception as e:
                 # Если произошла ошибка
                 email_attempt.status = "failed"

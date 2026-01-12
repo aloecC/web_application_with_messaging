@@ -2,13 +2,14 @@ import random
 
 from django import forms
 from django.contrib.auth.forms import (
-    UserCreationForm,
     AuthenticationForm,
     PasswordChangeForm,
+    UserCreationForm,
 )
 from django.core.mail import send_mail
 
 from config import settings
+
 from .models import CustomUser, TemporaryUser
 
 
@@ -57,9 +58,7 @@ class CustomUserCreationForm(UserCreationForm):
             {"class": "form-control", "type": "email", "placeholder": "Введите почту"}
         )
 
-        self.fields["username"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Введите ник"}
-        )
+        self.fields["username"].widget.attrs.update({"class": "form-control", "placeholder": "Введите ник"})
 
         self.fields["first_name"].widget.attrs.update(
             {"class": "form-control", "type": "text", "placeholder": "Введите ваше имя"}
@@ -72,9 +71,7 @@ class CustomUserCreationForm(UserCreationForm):
             }
         )
 
-        self.fields["password1"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Введите ваш пароль"}
-        )
+        self.fields["password1"].widget.attrs.update({"class": "form-control", "placeholder": "Введите ваш пароль"})
 
         self.fields["password2"].widget.attrs.update(
             {"class": "form-control", "placeholder": "Повторно введите ваш пароль"}
@@ -98,15 +95,11 @@ class CustomAuthenticationForm(AuthenticationForm):
     username = forms.EmailField(
         max_length=50,
         required=True,
-        widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": "Введите почту"}
-        ),
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Введите почту"}),
     )
     password = forms.CharField(
         required=True,
-        widget=forms.PasswordInput(
-            attrs={"class": "form-control", "placeholder": "Введите ваш пароль"}
-        ),
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Введите ваш пароль"}),
     )
 
     class Meta:
@@ -129,9 +122,7 @@ class UserProfileForm(forms.ModelForm):
             {"class": "form-control", "type": "email", "placeholder": "Введите почту"}
         )
 
-        self.fields["username"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Введите ник"}
-        )
+        self.fields["username"].widget.attrs.update({"class": "form-control", "placeholder": "Введите ник"})
 
         self.fields["first_name"].widget.attrs.update(
             {"class": "form-control", "type": "date", "placeholder": "Введите ваше имя"}
@@ -154,13 +145,9 @@ class ResetPasswordForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ResetPasswordForm, self).__init__(*args, **kwargs)
 
-        self.fields["email"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Введите почту"}
-        )
+        self.fields["email"].widget.attrs.update({"class": "form-control", "placeholder": "Введите почту"})
 
-        self.fields["password1"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Введите новый пароль"}
-        )
+        self.fields["password1"].widget.attrs.update({"class": "form-control", "placeholder": "Введите новый пароль"})
 
         self.fields["password2"].widget.attrs.update(
             {"class": "form-control", "placeholder": "Повторно введите новый пароль"}
@@ -168,12 +155,8 @@ class ResetPasswordForm(forms.Form):
 
 
 class UserPasswordChangeForm(PasswordChangeForm):
-    old_password = forms.CharField(
-        label="Старый пароль", widget=forms.PasswordInput(attrs={"class": "form-input"})
-    )
-    new_password1 = forms.CharField(
-        label="Новый пароль", widget=forms.PasswordInput(attrs={"class": "form-input"})
-    )
+    old_password = forms.CharField(label="Старый пароль", widget=forms.PasswordInput(attrs={"class": "form-input"}))
+    new_password1 = forms.CharField(label="Новый пароль", widget=forms.PasswordInput(attrs={"class": "form-input"}))
     new_password2 = forms.CharField(
         label="Подтверждение пароля",
         widget=forms.PasswordInput(attrs={"class": "form-input"}),

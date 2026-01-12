@@ -1,14 +1,12 @@
 import os
-from dotenv import load_dotenv
 from pathlib import Path
 
+from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = (
-    Path(__file__).resolve().parent.parent
-)  # Настройка котороая содержит путь до текущего приложения
+BASE_DIR = Path(__file__).resolve().parent.parent  # Настройка котороая содержит путь до текущего приложения
 # Нужен для построения абсолютных путей
 
 # Quick-start development settings - unsuitable for production
@@ -28,9 +26,7 @@ ALLOWED_HOSTS = [
 ]  # Список доменных имен которые могут обслуживаться нашим приложением
 
 
-BASE_DIR = (
-    Path(__file__).resolve().parent.parent
-)  # Настройка котороая содержит путь до текущего приложения
+BASE_DIR = Path(__file__).resolve().parent.parent  # Настройка котороая содержит путь до текущего приложения
 # Нужен для построения абсолютных путей
 
 
@@ -131,9 +127,7 @@ USE_TZ = True  # Поддержка временных зон
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"  # Маршрут для доступа к статике
-STATICFILES_DIRS = [
-    BASE_DIR / "static"
-]  # Список директорий на диске из которых подгружаются статические файлы
+STATICFILES_DIRS = [BASE_DIR / "static"]  # Список директорий на диске из которых подгружаются статические файлы
 
 MEDIA_URL = "/media/"  # Маршрут для доступа к медиа-файлам
 MEDIA_ROOT = BASE_DIR / "media"

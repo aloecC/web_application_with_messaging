@@ -1,35 +1,36 @@
 from django.urls import path
+
 from . import views
 from .views import (
-    MessageDeleteView,
-    MessageUpdateView,
+    CampaignBreakAllView,
+    CampaignCreateView,
+    CampaignDeleteView,
+    CampaignDetailView,
+    CampaignListActiveView,
+    CampaignListCompletedView,
+    CampaignListCreatedView,
+    CampaignListView,
+    CampaignStartAllView,
+    CampaignUpdateView,
+    CampaignView,
+    ContactsTemplateView,
+    EmailAttemptDeleteView,
+    EmailAttemptDetailView,
+    EmailAttemptFailedListView,
+    EmailAttemptListView,
+    EmailAttemptSuccessfulListView,
     MessageCreateView,
+    MessageDeleteView,
     MessageDetailView,
     MessageListView,
-    SubscriberListView,
-    SubscriberDeleteView,
-    SubscriberUpdateView,
-    SubscriberCreateView,
-    SubscriberDetailView,
-    CampaignCreateView,
-    CampaignDetailView,
-    CampaignUpdateView,
-    CampaignDeleteView,
-    CampaignListView,
-    CampaignView,
+    MessageUpdateView,
     StartEmailAttemptView,
     StopEmailAttemptView,
-    EmailAttemptListView,
-    EmailAttemptDetailView,
-    EmailAttemptDeleteView,
-    ContactsTemplateView,
-    EmailAttemptSuccessfulListView,
-    EmailAttemptFailedListView,
-    CampaignBreakAllView,
-    CampaignStartAllView,
-    CampaignListActiveView,
-    CampaignListCreatedView,
-    CampaignListCompletedView,
+    SubscriberCreateView,
+    SubscriberDeleteView,
+    SubscriberDetailView,
+    SubscriberListView,
+    SubscriberUpdateView,
 )
 
 # Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
@@ -45,13 +46,9 @@ urlpatterns = [
     path("message/<int:pk>/", MessageDetailView.as_view(), name="message_detail"),
     path("message/new/", MessageCreateView.as_view(), name="message_create"),
     path("message/<int:pk>/edit/", MessageUpdateView.as_view(), name="message_edit"),
-    path(
-        "message/<int:pk>/delete/", MessageDeleteView.as_view(), name="message_delete"
-    ),
+    path("message/<int:pk>/delete/", MessageDeleteView.as_view(), name="message_delete"),
     path("subscribers/", SubscriberListView.as_view(), name="subscriber_list"),
-    path(
-        "subscriber/<int:pk>/", SubscriberDetailView.as_view(), name="subscriber_detail"
-    ),
+    path("subscriber/<int:pk>/", SubscriberDetailView.as_view(), name="subscriber_detail"),
     path("subscriber/new/", SubscriberCreateView.as_view(), name="subscriber_create"),
     path(
         "subscriber/<int:pk>/edit/",
@@ -64,9 +61,7 @@ urlpatterns = [
         name="subscriber_delete",
     ),
     path("campaign/<int:pk>/", CampaignDetailView.as_view(), name="campaign_detail"),
-    path(
-        "campaign/start/<int:pk>/", StartEmailAttemptView.as_view(), name="start_email"
-    ),
+    path("campaign/start/<int:pk>/", StartEmailAttemptView.as_view(), name="start_email"),
     path("campaign/stop/<int:pk>/", StopEmailAttemptView.as_view(), name="stop_email"),
     path("campaigns/break/", CampaignBreakAllView.as_view(), name="campaign_break"),
     path("campaigns/start/", CampaignStartAllView.as_view(), name="campaign_start"),

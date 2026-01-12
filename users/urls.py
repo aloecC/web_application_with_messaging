@@ -1,28 +1,26 @@
-from django.urls import path, reverse_lazy
-
-from .forms import CustomAuthenticationForm
-
 from django.contrib.auth.views import (
     LoginView,
     LogoutView,
-    PasswordResetView,
-    PasswordResetDoneView,
-    PasswordResetConfirmView,
-    PasswordResetCompleteView,
     PasswordChangeDoneView,
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
 )
+from django.urls import path, reverse_lazy
 
+from .forms import CustomAuthenticationForm
 from .views import (
-    RegisterView,
-    UserDetailView,
-    UserProfileEditView,
-    VerifyView,
-    UsersListView,
-    UserBlockView,
-    UserEndBlockView,
     DeleteProfileView,
+    RegisterView,
+    UserBlockView,
+    UserDetailView,
+    UserEndBlockView,
     UserPasswordChange,
+    UserProfileEditView,
     UserProfileView,
+    UsersListView,
+    VerifyView,
 )
 
 # Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
@@ -35,14 +33,10 @@ urlpatterns = [
     path("verify/", VerifyView.as_view(), name="verify"),
     path(
         "login/",
-        LoginView.as_view(
-            template_name="users/login.html", form_class=CustomAuthenticationForm
-        ),
+        LoginView.as_view(template_name="users/login.html", form_class=CustomAuthenticationForm),
         name="login",
     ),
-    path(
-        "logout/", LogoutView.as_view(next_page="mailing:campaign_list"), name="logout"
-    ),
+    path("logout/", LogoutView.as_view(next_page="mailing:campaign_list"), name="logout"),
     path("users/", UsersListView.as_view(), name="user_list"),
     path("user/detail/<str:username>/", UserDetailView.as_view(), name="user_detail"),
     path("profile/", UserProfileView.as_view(), name="user_profile"),
@@ -88,9 +82,7 @@ urlpatterns = [
     ),
     path(
         "password-reset/complete/",
-        PasswordResetCompleteView.as_view(
-            template_name="users/password_reset_complete.html"
-        ),
+        PasswordResetCompleteView.as_view(template_name="users/password_reset_complete.html"),
         name="password_reset_complete",
     ),
 ]

@@ -2,10 +2,10 @@ import os
 from datetime import datetime
 
 from django import forms
+from django.core.exceptions import ValidationError
 from django.core.files.images import get_image_dimensions
 
 from .models import Campaign, Subscriber
-from django.core.exceptions import ValidationError
 
 
 class CampaignForm(forms.ModelForm):
@@ -21,9 +21,7 @@ class CampaignForm(forms.ModelForm):
         if user:
             self.fields["subscribers"].queryset = Subscriber.objects.filter(owner=user)
 
-        self.fields["message"].widget.attrs.update(
-            {"class": "form-control", "placeholder": "Выберите сообщение"}
-        )
+        self.fields["message"].widget.attrs.update({"class": "form-control", "placeholder": "Выберите сообщение"})
 
         self.fields["subscribers"].widget.attrs.update(
             {"class": "form-control", "placeholder": "Выберите получателей"}

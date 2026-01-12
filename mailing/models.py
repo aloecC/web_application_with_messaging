@@ -14,9 +14,7 @@ class Subscriber(models.Model):
     email = models.EmailField(unique=True, verbose_name="Почта")
     full_name = models.CharField(max_length=255, verbose_name="Ф.И.О.")
     comment = models.TextField(blank=True, verbose_name="Комментарий")
-    owner = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="subscriber_owner", default=1
-    )
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="subscriber_owner", default=1)
 
     def __str__(self):
         return self.full_name
@@ -27,12 +25,8 @@ class Message(models.Model):
 
     subject = models.CharField(max_length=255, verbose_name="Тема письма")
     body = models.TextField(null=True, blank=True, verbose_name="Тело письма")
-    created_at = models.DateTimeField(
-        auto_now_add=True, verbose_name="Дата и время создания"
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True, verbose_name="Дата и время последнего обновления"
-    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата и время последнего обновления")
 
     def __str__(self):
         return self.subject
@@ -59,28 +53,14 @@ class Campaign(models.Model):
         verbose_name="Сообщение",
         related_name="campaignes",
     )
-    subscribers = models.ManyToManyField(
-        Subscriber, related_name="campaigns", verbose_name="Получатели"
-    )
-    start_time = models.DateTimeField(
-        verbose_name="Дата и время начала отправки", blank=False, null=False
-    )
-    first_sent_at = models.DateTimeField(
-        verbose_name="Дата и время первой отправки", blank=True, null=True
-    )
-    end_time = models.DateTimeField(
-        verbose_name="Дата и время окончания отправки", blank=False, null=False
-    )
-    status = models.CharField(
-        max_length=10, choices=STATUS_CHOICES, default="Создана", verbose_name="Статус"
-    )
+    subscribers = models.ManyToManyField(Subscriber, related_name="campaigns", verbose_name="Получатели")
+    start_time = models.DateTimeField(verbose_name="Дата и время начала отправки", blank=False, null=False)
+    first_sent_at = models.DateTimeField(verbose_name="Дата и время первой отправки", blank=True, null=True)
+    end_time = models.DateTimeField(verbose_name="Дата и время окончания отправки", blank=False, null=False)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Создана", verbose_name="Статус")
 
-    status_active = models.BooleanField(
-        verbose_name="Возможность рассылки", default=True
-    )
-    owner = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="campaign_owner", default=1
-    )
+    status_active = models.BooleanField(verbose_name="Возможность рассылки", default=True)
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="campaign_owner", default=1)
 
     def save(self, *args, **kwargs):
         if self.pk is None:
@@ -91,14 +71,10 @@ class Campaign(models.Model):
     def clean(self):
 
         if not self.start_time and not isinstance(self.start_time, datetime):
-            raise ValidationError(
-                "Неправильный формат даты. Используйте формат YYYY-MM-DD HH:MM."
-            )
+            raise ValidationError("Неправильный формат даты. Используйте формат YYYY-MM-DD HH:MM.")
 
         if not self.end_time and not isinstance(self.end_time, datetime):
-            raise ValidationError(
-                "Неправильный формат даты. Используйте формат YYYY-MM-DD HH:MM."
-            )
+            raise ValidationError("Неправильный формат даты. Используйте формат YYYY-MM-DD HH:MM.")
 
         if self.start_time >= self.end_time:
             raise ValidationError("Время начала должно быть меньше времени окончания.")
@@ -124,9 +100,7 @@ class Campaign(models.Model):
             raise ValidationError("Невозможно запустить рассылку")
 
     def __str__(self):
-        return (
-            f"Рассылка с {self.start_time} до {self.end_time} - Статус: {self.status}"
-        )
+        return f"Рассылка с {self.start_time} до {self.end_time} - Статус: {self.status}"
 
     def is_completed(self):
         return self.status == "Завершена"
@@ -140,15 +114,9 @@ class EmailAttempt(models.Model):
         ("failed", "Не успешно"),
     )
 
-    campaign = models.ForeignKey(
-        Campaign, on_delete=models.CASCADE, verbose_name="Рассылка"
-    )
-    subscriber = models.ForeignKey(
-        Subscriber, on_delete=models.CASCADE, related_name="emails"
-    )
-    sent_at = models.DateTimeField(
-        auto_now_add=True, verbose_name="Дата и время попытки"
-    )
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, verbose_name="Рассылка")
+    subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE, related_name="emails")
+    sent_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время попытки")
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,

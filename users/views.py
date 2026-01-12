@@ -1,40 +1,35 @@
 import random
 
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.decorators import method_decorator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-
+from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, PasswordChangeView
+from django.core.mail import send_mail
 from django.http import request
-
-from django.shortcuts import get_object_or_404, render, redirect
-from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
 from django.views.decorators.cache import cache_page
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, FormView, UpdateView
-from django.core.mail import send_mail
 
 from config.settings import DEFAULT_FROM_EMAIL, EMAIL_HOST_USER
 from mailing.models import Campaign, Subscriber
+
 from .forms import (
     CustomAuthenticationForm,
+    CustomUserCreationForm,
+    ResetPasswordForm,
+    UserPasswordChangeForm,
     UserProfileForm,
     VerificationCodeForm,
-    ResetPasswordForm,
-    CustomUserCreationForm,
-    UserPasswordChangeForm,
 )
 from .models import CustomUser, TemporaryUser
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.tokens import default_token_generator
-from django.urls import reverse
-from django.contrib import messages
 
 
 class RegisterView(FormView):
@@ -58,15 +53,11 @@ class RegisterView(FormView):
         )
 
         self.request.session["email"] = email
-        messages.success(
-            self.request, "Код подтверждения отправлен на вашу электронную почту."
-        )
+        messages.success(self.request, "Код подтверждения отправлен на вашу электронную почту.")
         return redirect(self.success_url)
 
     def send_verification_email(self, user_email):
-        verification_code = str(
-            random.randint(100000, 999999)
-        )  # Генерация 6-значного кода
+        verification_code = str(random.randint(100000, 999999))  # Генерация 6-значного кода
 
         send_mail(
             "Ваш код подтверждения",
@@ -88,9 +79,7 @@ class VerifyView(FormView):
         if form.is_valid():
             code_entered = form.cleaned_data["verification_code"]
             try:
-                temporary_user = TemporaryUser.objects.get(
-                    email=request.session["email"]
-                )
+                temporary_user = TemporaryUser.objects.get(email=request.session["email"])
 
                 if temporary_user.is_expired():
                     messages.error(request, "Срок действия кода подтверждения истек.")
@@ -157,9 +146,7 @@ class LoginView(View):
 
         if user is not None:
             if user.is_block:
-                return render(
-                    request, "login.html", {"error": "Данный пользователь заблокирован"}
-                )
+                return render(request, "login.html", {"error": "Данный пользователь заблокирован"})
             else:
                 login(request, user)
                 print(f"Отправка письма на: {user.email}")
@@ -244,9 +231,7 @@ class UserProfileEditView(LoginRequiredMixin, View):
 
         if form.is_valid():
             form.save()
-            return redirect(
-                "users:user_profile"
-            )  # Укажите свой URL для перенаправления после редактирования профиля
+            return redirect("users:user_profile")  # Укажите свой URL для перенаправления после редактирования профиля
         return render(request, "users/edit_profile.html", {"form": form})
 
 
@@ -311,9 +296,7 @@ class DeleteProfileView(LoginRequiredMixin, View):
         user = get_object_or_404(CustomUser, username=username)
         user.delete()
         messages.success(request, "Ваш профиль был успешно удален.")
-        return redirect(
-            "mailing:home"
-        )  # Перенаправление на главную страницу или другую страницу
+        return redirect("mailing:home")  # Перенаправление на главную страницу или другую страницу
 
 
 class UserPasswordChange(PasswordChangeView):

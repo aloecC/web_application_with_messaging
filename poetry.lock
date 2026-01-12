@@ -469,6 +469,21 @@ files = [
 ]
 
 [[package]]
+name = "isort"
+version = "7.0.0"
+description = "A Python utility / library to sort Python imports."
+optional = false
+python-versions = ">=3.10.0"
+files = [
+    {file = "isort-7.0.0-py3-none-any.whl", hash = "sha256:1bcabac8bc3c36c7fb7b98a76c8abb18e0f841a3ba81decac7691008592499c1"},
+    {file = "isort-7.0.0.tar.gz", hash = "sha256:5513527951aadb3ac4292a41a16cbc50dd1642432f5e8c20057d414bdafb4187"},
+]
+
+[package.extras]
+colors = ["colorama"]
+plugins = ["setuptools"]
+
+[[package]]
 name = "librt"
 version = "0.7.7"
 description = "Mypyc runtime library"
@@ -1209,4 +1224,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "d7bbfc2c39a189a166d20b605fde16a17663d126ab9e1ae7df048964e40115d5"
+content-hash = "48231737f8c4fbd9ec8d2dc854cd6118b2877c797abcb39ce07608ccd97fb8a4"

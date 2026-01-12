@@ -1,21 +1,21 @@
-from datetime import timezone
 import tkinter as tk
+from datetime import timezone
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.cache import cache_page
+from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.views.generic import ListView, DetailView, TemplateView
-from django.urls import reverse_lazy, reverse
 
-from config.settings import EMAIL_HOST_USER, DEFAULT_FROM_EMAIL
+from config.settings import DEFAULT_FROM_EMAIL, EMAIL_HOST_USER
 from mailing.forms import CampaignForm
-from mailing.models import Message, Subscriber, Campaign, EmailAttempt
+from mailing.models import Campaign, EmailAttempt, Message, Subscriber
 from users.models import CustomUser
 
 
@@ -59,8 +59,7 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
         # Получаем контекст от родительского класса
         context = super().get_context_data(**kwargs)
         context["is_manager"] = (
-            self.request.user.is_staff
-            or self.request.user.groups.filter(name="Менеджеры").exists()
+            self.request.user.is_staff or self.request.user.groups.filter(name="Менеджеры").exists()
         )
         # Получаем сообщение из контекста
         message = self.object
@@ -138,20 +137,14 @@ class SubscriberDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
     def test_func(self):
         subscriber = self.get_object()
-        if (
-            not self.request.user.groups.filter(name="Менеджер").exists()
-            and not self.request.user.is_staff
-        ):
+        if not self.request.user.groups.filter(name="Менеджер").exists() and not self.request.user.is_staff:
             return self.request.user == subscriber.owner
         return True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
         subscriber = self.get_object()
-        context["is_manager"] = (
-            self.request.user.is_staff
-            or self.request.user.groups.filter(name="Менеджер").exists()
-        )
+        context["is_manager"] = self.request.user.is_staff or self.request.user.groups.filter(name="Менеджер").exists()
         context["is_owner"] = self.request.user == subscriber.owner
         return context
 
@@ -165,9 +158,7 @@ class SubscriberCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("mailing:subscriber_list")
 
     def form_valid(self, form):
-        form.instance.owner = (
-            self.request.user
-        )  # Устанавливаем владельца на текущего пользователя
+        form.instance.owner = self.request.user  # Устанавливаем владельца на текущего пользователя
         return super().form_valid(form)
 
 
@@ -181,10 +172,7 @@ class SubscriberUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
-        context["is_manager"] = (
-            self.request.user.is_staff
-            or self.request.user.groups.filter(name="Менеджер").exists()
-        )
+        context["is_manager"] = self.request.user.is_staff or self.request.user.groups.filter(name="Менеджер").exists()
         return context
 
     def test_func(self):
@@ -230,10 +218,7 @@ class CampaignListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["count"] = self.get_count()
-        context["is_manager"] = (
-            self.request.user.is_staff
-            or self.request.user.groups.filter(name="Менеджер").exists()
-        )
+        context["is_manager"] = self.request.user.is_staff or self.request.user.groups.filter(name="Менеджер").exists()
         context["is_status_active"] = self.get_active_status()
         return context
 
@@ -257,18 +242,13 @@ class CampaignListActiveView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         if self.request.user.groups.filter(name="Менеджер").exists():
             queryset = Campaign.objects.filter(status="Запущена")
         else:
-            queryset = Campaign.objects.filter(
-                owner=self.request.user, status="Запущена"
-            )
+            queryset = Campaign.objects.filter(owner=self.request.user, status="Запущена")
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["count"] = self.get_count()
-        context["is_manager"] = (
-            self.request.user.is_staff
-            or self.request.user.groups.filter(name="Менеджер").exists()
-        )
+        context["is_manager"] = self.request.user.is_staff or self.request.user.groups.filter(name="Менеджер").exists()
         return context
 
     def get_count(self):
@@ -291,18 +271,13 @@ class CampaignListCreatedView(LoginRequiredMixin, UserPassesTestMixin, ListView)
         if self.request.user.groups.filter(name="Менеджер").exists():
             queryset = Campaign.objects.filter(status="Создана")
         else:
-            queryset = Campaign.objects.filter(
-                owner=self.request.user, status="Создана"
-            )
+            queryset = Campaign.objects.filter(owner=self.request.user, status="Создана")
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["count"] = self.get_count()
-        context["is_manager"] = (
-            self.request.user.is_staff
-            or self.request.user.groups.filter(name="Менеджер").exists()
-        )
+        context["is_manager"] = self.request.user.is_staff or self.request.user.groups.filter(name="Менеджер").exists()
         return context
 
     def get_count(self):
@@ -325,18 +300,13 @@ class CampaignListCompletedView(LoginRequiredMixin, UserPassesTestMixin, ListVie
         if self.request.user.groups.filter(name="Менеджер").exists():
             queryset = Campaign.objects.filter(status="Завершена")
         else:
-            queryset = Campaign.objects.filter(
-                owner=self.request.user, status="Завершена"
-            )
+            queryset = Campaign.objects.filter(owner=self.request.user, status="Завершена")
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["count"] = self.get_count()
-        context["is_manager"] = (
-            self.request.user.is_staff
-            or self.request.user.groups.filter(name="Менеджер").exists()
-        )
+        context["is_manager"] = self.request.user.is_staff or self.request.user.groups.filter(name="Менеджер").exists()
         return context
 
     def get_count(self):
@@ -371,8 +341,7 @@ class CampaignView(LoginRequiredMixin, UserPassesTestMixin, View):
             "total_campaigns": campaigns.count(),
             "active_campaigns": active_campaigns,
             "unique_recipients_count": unique_recipients,
-            "is_manager": self.request.user.is_staff
-            or self.request.user.groups.filter(name="Менеджер").exists(),
+            "is_manager": self.request.user.is_staff or self.request.user.groups.filter(name="Менеджер").exists(),
             "users_count": CustomUser.objects.all().count(),
         }
 
@@ -410,20 +379,14 @@ class CampaignDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         user_owner = campaign.owner
         context["subscribers"] = current_campaign.subscribers.all()
         context["campaignes"] = Campaign.objects.all()
-        context["is_manager"] = (
-            self.request.user.is_staff
-            or self.request.user.groups.filter(name="Менеджер").exists()
-        )
+        context["is_manager"] = self.request.user.is_staff or self.request.user.groups.filter(name="Менеджер").exists()
         context["is_owner"] = (self.request.user == user_owner,)
         context["user_owner"] = user_owner
         return context
 
     def test_func(self):
         campaign = self.get_object()
-        if (
-            not self.request.user.groups.filter(name="Менеджер").exists()
-            and not self.request.user.is_staff
-        ):
+        if not self.request.user.groups.filter(name="Менеджер").exists() and not self.request.user.is_staff:
             return self.request.user == campaign.owner
         return True
 
@@ -488,10 +451,7 @@ class CampaignDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         campaign = self.get_object()
-        if (
-            not self.request.user.groups.filter(name="Менеджер").exists()
-            and not self.request.user.is_staff
-        ):
+        if not self.request.user.groups.filter(name="Менеджер").exists() and not self.request.user.is_staff:
             return self.request.user == campaign.owner
         return True
 
@@ -520,9 +480,7 @@ class StartEmailAttemptView(LoginRequiredMixin, View):
                 email_attempt.status = "successful"
                 email_attempt.subscriber = subscriber
 
-                email_attempt.response = (
-                    f"Sent to {subscriber.full_name} with response {response}"
-                )
+                email_attempt.response = f"Sent to {subscriber.full_name} with response {response}"
             except Exception as e:
                 # Если произошла ошибка
                 email_attempt.status = "failed"
@@ -597,9 +555,7 @@ class EmailAttemptSuccessfulListView(LoginRequiredMixin, UserPassesTestMixin, Li
             if self.request.user.groups.filter(name="Менеджер").exists():
                 queryset = EmailAttempt.objects.filter(status="successful")
             else:
-                queryset = EmailAttempt.objects.filter(
-                    owner=self.request.user, status="successful"
-                )
+                queryset = EmailAttempt.objects.filter(owner=self.request.user, status="successful")
         cache.set("my_email_attempt_successful_list", queryset, 60 * 15)
         return queryset
 
@@ -631,9 +587,7 @@ class EmailAttemptFailedListView(LoginRequiredMixin, UserPassesTestMixin, ListVi
             if self.request.user.groups.filter(name="Менеджер").exists():
                 queryset = EmailAttempt.objects.filter(status="failed")
             else:
-                queryset = EmailAttempt.objects.filter(
-                    owner=self.request.user, status="failed"
-                )
+                queryset = EmailAttempt.objects.filter(owner=self.request.user, status="failed")
         cache.set("my_email_attempt_failed_list", queryset, 60 * 15)
         return queryset
 
@@ -659,10 +613,7 @@ class EmailAttemptDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView
 
     def test_func(self):
         emailattempt = self.get_object()
-        if (
-            not self.request.user.groups.filter(name="Менеджер").exists()
-            and not self.request.user.is_staff
-        ):
+        if not self.request.user.groups.filter(name="Менеджер").exists() and not self.request.user.is_staff:
             return self.request.user == emailattempt.owner
         return True
 
@@ -677,10 +628,7 @@ class EmailAttemptDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView
 
     def test_func(self):
         emailattempt = self.get_object()
-        if (
-            not self.request.user.groups.filter(name="Менеджер").exists()
-            and not self.request.user.is_staff
-        ):
+        if not self.request.user.groups.filter(name="Менеджер").exists() and not self.request.user.is_staff:
             return self.request.user == emailattempt.owner
         return True
 
@@ -696,9 +644,7 @@ class ContactsTemplateView(LoginRequiredMixin, TemplateView):
         email = request.POST.get("email")
 
         subject = "Поддержка"
-        message = (
-            f'Сообщение:"{message}". Электронная почта для связи: {email}({name}).'
-        )
+        message = f'Сообщение:"{message}". Электронная почта для связи: {email}({name}).'
         from_email = DEFAULT_FROM_EMAIL
         recipient_list = [
             DEFAULT_FROM_EMAIL,

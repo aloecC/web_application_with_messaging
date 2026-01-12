@@ -23,7 +23,11 @@ dotenv = "^0.9.9"
 pillow = "^12.1.0"
 redis = "^7.1.0"
 pre-commit = "^4.5.1"
+isort = "^7.0.0"
 
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.5.1"
 
 [build-system]
 requires = ["poetry-core"]

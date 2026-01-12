@@ -1,14 +1,14 @@
-from django.contrib import admin
-from django.contrib.auth.views import (
-    PasswordResetConfirmView,
-    PasswordResetCompleteView,
-)
-from django.urls import path, include, reverse_lazy
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import include, path
-from mailing import urls as mailing_urls
+from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import (
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+)
+from django.urls import include, path, reverse_lazy
+
+from mailing import urls as mailing_urls
 from users import urls
 
 urlpatterns = [
