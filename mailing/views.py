@@ -415,6 +415,11 @@ class CampaignUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         campaign = self.get_object()
         return self.request.user == campaign.owner
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
 
 class CampaignDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """Удаление рассылки"""
