@@ -1,0 +1,27 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Информация о получателе{% endblock %}
+
+{% block content %}
+<div class="row rounded mt-3">
+    <h4>{{ subscriber.email }}</h4>
+    <div class="col-12 ">
+        <p>{{ subscriber.full_name }}</p>
+        <span class=" card text-dark bg-white"><p class="mt-1 mx-1 ">{{ subscriber.comment }}</p></span>
+    </div>
+    <div class="col-12 text-center">
+        <p></p>
+    </div>
+</div>
+<div class="text-end">
+        <a href="{% url 'mailing:subscriber_list' %}" ><img src="https://cdn-icons-png.flaticon.com/128/2728/2728745.png" style="width: auto; height: 35px;" title="Вернуться к списку" class="mx-1"></a>
+    {% if is_owner %}
+        <a href="{% url 'mailing:subscriber_edit' subscriber.pk %}"><img src="https://cdn-icons-png.flaticon.com/128/8203/8203722.png" style="width: auto; height: 35px;" title="Редактировать" class="mx-1"></a>
+        <a href="{% url 'mailing:subscriber_delete' subscriber.pk %}" ><img src="https://cdn-icons-png.flaticon.com/128/5074/5074264.png" style="width: auto; height: 35px;" title="Удалить" class="mx-1"></a>
+    {% endif %}
+
+</div>
+<div class=" mt-5">
+        <span class="border border-white"></span>
+</div>
+{% endblock %}

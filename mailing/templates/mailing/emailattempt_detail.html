@@ -1,0 +1,21 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Информация о Рассылке{% endblock %}
+
+{% block content %}
+<h4 class=" mt-3 link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover "><a href="#"><img src="https://cdn-icons-png.flaticon.com/128/4655/4655000.png" style="width: auto; height: 25px;" title="к предыдущему отчету" class="mx-2"></a>Отчет о рассылке <a href="#"><img src="https://cdn-icons-png.flaticon.com/128/25/25446.png" style="width: auto; height: 25px;" class="mx-1" title="к следующему отчету"></a></h4>
+<div class="row rounded mt-3 card">
+
+    <div class="col-12 text-start container">
+        <h6 class=" mt-3 text-success-emphasis">Тема письма:   {{ emailattempt.campaign.message.subject }}</h6>
+        <h6 class=" mt-3 text-success-emphasis">Получатель:   {{ emailattempt.subscriber }}</h6>
+        <h6 class=" mt-3 text-success-emphasis">Статус:   {{ emailattempt.status }}</h6>
+        <h6 class=" mt-3 text-success-emphasis">Ответ почтового сервера:   {{ emailattempt.response }}</h6>
+        <h6 class=" mt-3 text-success-emphasis">Дата отправки:   {{ emailattempt.sent_at|date:"d/m/Y" }}</h6>
+    </div>
+</div>
+<div class="text-end mt-3">
+        <a href="{% url 'mailing:emailattempt_list' %}"><img src="https://cdn-icons-png.flaticon.com/128/2728/2728745.png" style="width: auto; height: 35px;" title="Вернуться к списку"></a>
+        <a href="{% url 'mailing:emailattempt_delete' emailattempt.pk %}"><img src="https://cdn-icons-png.flaticon.com/128/5074/5074264.png" style="width: auto; height: 35px;" title="Удалить"></a>
+</div>
+{% endblock %}

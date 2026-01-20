@@ -1,0 +1,16 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%} Главная {% endblock %}
+
+{% block content %}
+<div class="card p-3 mt-5 rounded border-dark">
+    <p>Общее количество рассылок: {{ total_campaigns }}</p>
+    <p>Количество активных рассылок: {{ active_campaigns }}</p>
+    <p>Количество уникальных получателей: {{ unique_recipients_count }}</p>
+    {% if is_manager %}
+    <p>Количество отправителей: {{ users_count }}</p>
+        <a href="{% url 'users:user_list' %}" class="btn btn-outline-secondary">Перейти к отправителям</a>
+    {% endif %}
+</div>
+
+{% endblock %}

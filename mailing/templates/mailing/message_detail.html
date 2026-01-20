@@ -1,0 +1,28 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Информация о сообщение{% endblock %}
+
+{% block content %}
+<div class="row rounded mt-3">
+    <h4 class=" container link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover ">Тема письма: {{ message.subject }}</h4>
+    <div class="col-12 text-start">
+    </div>
+    <div class="col-12 text-start">
+        <p class="text-bg-light p-3">{{ message.body }}</p>
+    </div>
+    <div class="text-end">
+
+    </div>
+</div>
+<div class="text-end">
+    <a href="{% url 'mailing:message_list' %}" ><img src="https://cdn-icons-png.flaticon.com/128/2728/2728745.png" style="width: auto; height: 35px;" class="mx-1" title="Вернуться к списку"></a>
+    <a href="{% url 'mailing:message_edit' message.pk %}"><img src="https://cdn-icons-png.flaticon.com/128/8203/8203722.png" style="width: auto; height: 35px;" class="mx-1" title="Редактировать"></a>
+    <a href="{% url 'mailing:message_delete' message.pk %}"><img src="https://cdn-icons-png.flaticon.com/128/5074/5074264.png" style="width: auto; height: 35px;" class="mx-1" title="Удалить"></a>
+
+</div>
+<div class=" mt-5">
+        <span class="border border-white"></span>
+</div>
+<div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Отправители{% endblock %}
+
+{% block content %}
+<h4 class="text-center mt-4"><img src="https://cdn-icons-png.flaticon.com/128/684/684833.png" class="mx-1" style="width: auto; height: 30px;"> Список доступных отправителей | {{ users_count }}</h4>
+<div class="row">
+    <div class="col-3"></div>
+    <div class="col-6 mt-2  text-center">
+        {% for user in users %}
+            <button class="rounded text-center mt-3 w-100 btn btn-outline-light border border-secondary-subtle"><a  class="link-body-emphasis link-offset-2 link-underline link-underline-opacity-0" href="{% url 'users:user_detail' user.username %}">
+                {{ user.full_name }} {{ user.email }} </a></button>
+        {% endfor %}
+    </div>
+    <div class="col-3"></div>
+</div>
+{% endblock %}

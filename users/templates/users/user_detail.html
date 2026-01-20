@@ -1,0 +1,69 @@
+{% extends 'mailing/base.html' %}
+
+{% block title%}Профиль пользователя{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-3">
+    </div>
+    <div class="col-6 mt-3 border-bg-dark">
+        <div class="rounded text-start w-100 btn btn-outline-light border border-secondary-subtle">
+                <h6 class=" mt-2 text-success-emphasis">
+                    {% if user.avatar %}
+                        <div class="text-center mx-5">
+                            <img src="{{ user.avatar.url }}" class="rounded mx-auto d-block" style="width: auto; height: 250px;" >
+                        </div>
+                    {% else %}
+                        <div class="text-center mx-5">
+                            <img src="https://cdn-icons-png.flaticon.com/128/149/149071.png" class="rounded mx-auto d-block mt-3" style="width: auto; height: 250px;">
+                        <p class="list-group-item">Отсутствует фото пользователя</p>
+                        </div>
+                    {% endif %}
+                    Имя пользователя: <p class="p-3 text-black-50 bg-white mt-1 text-center">{{ user.username }}</p>
+                    Номер телефона: <p class="p-3 text-black-50 bg-white mt-1 text-center">{{ user.phone_number }}</p>
+                    Почта: <p class="p-3  bg-white mt-1 text-center">{{ user.email }}</p>
+                    Статус подтверждения почты: <p class="p-3 bg-white mt-1 text-center">{{ user.email_confirmed }}</p>
+
+                    {% if is_manager %}
+                        Количество клиентов: <p class="p-3 bg-white mt-1 text-center">{{ subscribers_count }}</p>
+                        Количество рассылок: <p class="p-3 bg-white mt-1 text-center">{{ campaign_count }}</p>
+                        Статус: <p class="p-3 bg-white mt-1 text-center">{{ is_block }}</p>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-6 text-start">
+                            {% if is_manager %}
+                            <a href="{% url 'users:user_list' %}" class="mx-1"><img src="https://img.icons8.com/?size=160&id=49217&format=png" style="width: auto; height: 50px;" title="К списку пользователей"></a>
+                            {% else %}
+                            <a href="{% url 'mailing:home' %}" class="mx-1"><img src="https://cdn-icons-png.flaticon.com/128/2728/2728745.png" style="width: auto; height: 40px;" title="Назад"></a>
+                            {% endif %}
+                        </div>
+                        <div class="col-6 text-end">
+                            {% if is_manager %}
+                            {% if not user.is_block %}
+                                <form method="post" action="{% url 'users:user_block' user.username %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" style="border: none; background: none; padding: 0; cursor: pointer;" class="image-button">
+                                        <img src="https://img.icons8.com/?size=128&id=S2dQjgxYT0f4&format=png" style="width: auto; height: 50px;" title="Блокировать">
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url 'users:user_end_block' user.username %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" style="border: none; background: none; padding: 0; cursor: pointer;" class="image-button">
+                                        <img src="https://img.icons8.com/?size=128&id=dthFgnvD5zrE&format=png" style="width: auto; height: 50px;" title="Разблокировать">
+                                    </button>
+                                </form>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+                </h6>
+        </div>
+    </div>
+    <div class="col-3">
+    </div>
+</div>
+
+{% endblock %}

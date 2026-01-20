@@ -1,10 +1,113 @@
 from django.urls import path
+
 from . import views
+from .views import (
+    CampaignBreakAllView,
+    CampaignCreateView,
+    CampaignDeleteView,
+    CampaignDetailView,
+    CampaignListActiveView,
+    CampaignListCompletedView,
+    CampaignListCreatedView,
+    CampaignListView,
+    CampaignStartAllView,
+    CampaignUpdateView,
+    CampaignView,
+    ContactsTemplateView,
+    EmailAttemptDeleteView,
+    EmailAttemptDetailView,
+    EmailAttemptFailedListView,
+    EmailAttemptListView,
+    EmailAttemptSuccessfulListView,
+    MessageCreateView,
+    MessageDeleteView,
+    MessageDetailView,
+    MessageListView,
+    MessageUpdateView,
+    StartEmailAttemptView,
+    StopEmailAttemptView,
+    SubscriberCreateView,
+    SubscriberDeleteView,
+    SubscriberDetailView,
+    SubscriberListView,
+    SubscriberUpdateView,
+)
 
-#Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
-app_name = 'mailing'
+# Пространство имен(помогает избежать ошибки при одинаковых именах маршрута)
+app_name = "mailing"
 
-#В urlpatterns создаются и регестрируются маршруты
-#Path это специальная функция которая позволяет регестрировать наш маршрут
+# В urlpatterns создаются и регестрируются маршруты
+# Path это специальная функция которая позволяет регестрировать наш маршрут
+
+
 urlpatterns = [
+    path("contacts/", ContactsTemplateView.as_view(), name="contacts"),
+    path("messages/", MessageListView.as_view(), name="message_list"),
+    path("message/<int:pk>/", MessageDetailView.as_view(), name="message_detail"),
+    path("message/new/", MessageCreateView.as_view(), name="message_create"),
+    path("message/<int:pk>/edit/", MessageUpdateView.as_view(), name="message_edit"),
+    path("message/<int:pk>/delete/", MessageDeleteView.as_view(), name="message_delete"),
+    path("subscribers/", SubscriberListView.as_view(), name="subscriber_list"),
+    path("subscriber/<int:pk>/", SubscriberDetailView.as_view(), name="subscriber_detail"),
+    path("subscriber/new/", SubscriberCreateView.as_view(), name="subscriber_create"),
+    path(
+        "subscriber/<int:pk>/edit/",
+        SubscriberUpdateView.as_view(),
+        name="subscriber_edit",
+    ),
+    path(
+        "subscriber/<int:pk>/delete/",
+        SubscriberDeleteView.as_view(),
+        name="subscriber_delete",
+    ),
+    path("campaign/<int:pk>/", CampaignDetailView.as_view(), name="campaign_detail"),
+    path("campaign/start/<int:pk>/", StartEmailAttemptView.as_view(), name="start_email"),
+    path("campaign/stop/<int:pk>/", StopEmailAttemptView.as_view(), name="stop_email"),
+    path("campaigns/break/", CampaignBreakAllView.as_view(), name="campaign_break"),
+    path("campaigns/start/", CampaignStartAllView.as_view(), name="campaign_start"),
+    path("campaigns/all/", CampaignListView.as_view(), name="campaign_list"),
+    path(
+        "campaigns/active/",
+        CampaignListActiveView.as_view(),
+        name="campaign_list_active",
+    ),
+    path(
+        "campaigns/created/",
+        CampaignListCreatedView.as_view(),
+        name="campaign_list_created",
+    ),
+    path(
+        "campaigns/compleated/",
+        CampaignListCompletedView.as_view(),
+        name="campaign_list_compleated",
+    ),
+    path("home/", CampaignView.as_view(), name="home"),
+    path("campaign/new/", CampaignCreateView.as_view(), name="campaign_create"),
+    path("campaign/<int:pk>/edit/", CampaignUpdateView.as_view(), name="campaign_edit"),
+    path(
+        "campaign/<int:pk>/delete/",
+        CampaignDeleteView.as_view(),
+        name="campaign_delete",
+    ),
+    path("emailattempts/", EmailAttemptListView.as_view(), name="emailattempt_list"),
+    path(
+        "emailattempts/successful/",
+        EmailAttemptSuccessfulListView.as_view(),
+        name="emailattempt_list_successful",
+    ),
+    path(
+        "emailattempts/failed/",
+        EmailAttemptFailedListView.as_view(),
+        name="emailattempt_list_failed",
+    ),
+    path(
+        "emailattempt/<int:pk>/",
+        EmailAttemptDetailView.as_view(),
+        name="emailattempt_detail",
+    ),
+    path(
+        "emailattempt/<int:pk>/delete/",
+        EmailAttemptDeleteView.as_view(),
+        name="emailattempt_delete",
+    ),
 ]
